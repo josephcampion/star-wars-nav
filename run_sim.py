@@ -1,15 +1,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-# import parameters
+# import parameters as IC
+from kinematic_state import KinematicState
 
-# Want to break things up into different files(/folders?)
+####################################################
+            #   Propagate Simulation
+####################################################
 
-# To start, going to steal parameters from 
-
-# Truth kinematic state
-
-# 
+# Initialize sim parameters
 Tsim = 10.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
@@ -17,54 +16,52 @@ t0 = 0.0
 time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
-# Sim and plot 2nd order system
-
-
 # Initialize vectors
-X = np.zeros(nt)
-Xdot = np.zeros(nt)
-Xddot = np.zeros(nt)
+initial_state = KinematicState()
 
-# Initial conditions
-x0 = 0.0
-xdot0 = 0.0
+xdim = [nt, len(initial_state.get_state())]
 
-X[0] = x0
-Xdot[0] = xdot0
+X = np.zeros(xdim)
+Xdot = np.zeros(xdim)
+Xddot = np.zeros(xdim)
+
+####################################################
+            #   Input Control 
+####################################################
 
 # Input force
 amp =  3.0
 # w_in = 1.0 # [rad/s]
 # U = amp * np.sin(w_in * time)
-U = amp * np.ones(nt)
+U = amp * np.ones(xdim)
 
 # natural freq.
-wn = 1.0 # [rad/s]
+wn = 2.0 # [rad/s]
 
 # damping ratio
-zeta = 0.6 # []
+zeta = 0.3 # []
 
-# xddot + 2*wn*zeta*xdot + wn**2*x = u
-# xddot = u - 2*wn*zeta*xdot - wn**2*x
-
-print()
+####################################################
+            #   Propagate Simulation
+####################################################
 
 for i in range(nt):
 
-    t = time[i]
-    x = X[i]
-    xdot = Xdot[i]
-    u = U[i]
+    x = X[i,:]
+    xdot = Xdot[i,:]
+    u = U[i,:]
 
+    # xddot + 2*wn*zeta*xdot + wn**2*x = u
     xddot = u - 2 * wn * zeta * xdot - wn**2 * x
-    Xddot[i] = xddot
+    Xddot[i,:] = xddot
 
     if i < (nt-1):
-        Xdot[i+1] = Xdot[i] + xddot * dt
-        X[i+1] = X[i] + xdot * dt
+        Xdot[i+1,:] = Xdot[i,:] + xddot * dt
+        X[i+1,:] = X[i,:] + xdot * dt
 
-
-### Plot stuff
+####################################################
+    #   Plot Results (put this in solo file/dir)
+####################################################
     
 fig, axs = plt.subplots(3,1)
 
@@ -74,9 +71,9 @@ fig, axs = plt.subplots(3,1)
 # ax.axvline(color="grey")
 # ax.axline((0, 0.5), slope=0.25, color="black", linestyle=(0, (5, 5)))
 
-axs[0].plot(time, X) # , linewidth=2) # , label=r"$\sigma(t) = \frac{1}{1 + e^{-t}}$")
-axs[1].plot(time, Xdot) # , linewidth=2)
-axs[2].plot(time, Xddot) # , linewidth=2)
+axs[0].plot(time, X[:,1]) # , linewidth=2) # , label=r"$\sigma(t) = \frac{1}{1 + e^{-t}}$")
+axs[1].plot(time, Xdot[:,1]) # , linewidth=2)
+axs[2].plot(time, Xddot[:,1]) # , linewidth=2)
 
 axs[0].set_title("Position [m]")
 axs[1].set_title("Velocity [m/s]")
