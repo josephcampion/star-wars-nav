@@ -22,21 +22,23 @@ class Plotter:
         self.plot_lat_axis()
         self.plot_lin_axis()
         self.plot_ang_axis()
+        self.plot_all_states()
+        self.plot_all_derivatives()
         plt.show()
         return
 
     def plot_lon_axis(self):
         fig_lon, ax_lon = plt.subplots(4,2)
 
-        ax_lon[0,0].plot(self._t, self._X[:,8]) # w
-        ax_lon[1,0].plot(self._t, self._Xdot[:,8]) # wdot
-        ax_lon[2,0].plot(self._t, self._X[:,6]) # u
-        ax_lon[3,0].plot(self._t, self._Xdot[:,6]) # udot
+        ax_lon[0,0].plot(self._t, self._X[:,8])
+        ax_lon[1,0].plot(self._t, self._Xdot[:,8])
+        ax_lon[2,0].plot(self._t, self._X[:,6])
+        ax_lon[3,0].plot(self._t, self._Xdot[:,6])
 
-        ax_lon[0,1].plot(self._t, self._X[:,8]) # alpha ~= w/V0
-        ax_lon[1,1].plot(self._t, self._X[:,4]) # theta
-        ax_lon[2,1].plot(self._t, self._X[:,10]) # q
-        ax_lon[3,1].plot(self._t, self._Xdot[:,10]) # qdot
+        ax_lon[0,1].plot(self._t, self._X[:,8])
+        ax_lon[1,1].plot(self._t, self._X[:,4])
+        ax_lon[2,1].plot(self._t, self._X[:,10])
+        ax_lon[3,1].plot(self._t, self._Xdot[:,10])
 
         ax_lon[0,0].set_title(r"$w$")
         ax_lon[1,0].set_title(r"$\dot{w}$")
@@ -214,4 +216,108 @@ class Plotter:
         for j in range(3):
             ax_lin[2,j].set_xlabel("Time [s]")
         
+        return
+    
+    def plot_all_states(self):
+        fig_all, ax_all = plt.subplots(4,3)
+
+        ax_all[0,0].plot(self._t, self._X[:,0])
+        ax_all[0,1].plot(self._t, self._X[:,1])
+        ax_all[0,2].plot(self._t, self._X[:,2])
+
+        ax_all[1,0].plot(self._t, self._X[:,3])
+        ax_all[1,1].plot(self._t, self._X[:,4])
+        ax_all[1,2].plot(self._t, self._X[:,5])
+
+        ax_all[2,0].plot(self._t, self._X[:,6])
+        ax_all[2,1].plot(self._t, self._X[:,7])
+        ax_all[2,2].plot(self._t, self._X[:,8])
+
+        ax_all[3,0].plot(self._t, self._X[:,9])
+        ax_all[3,1].plot(self._t, self._X[:,10])
+        ax_all[3,2].plot(self._t, self._X[:,11])
+
+        ax_all[0,0].set_title(r"$p_n$")
+        ax_all[0,1].set_title(r"$p_e$")
+        ax_all[0,2].set_title(r"$p_d$")
+
+        ax_all[1,0].set_title(r"$\phi$")
+        ax_all[1,1].set_title(r"$\theta$")
+        ax_all[1,2].set_title(r"$\psi$")
+
+        ax_all[2,0].set_title(r"$u$")
+        ax_all[2,1].set_title(r"$v$")
+        ax_all[2,2].set_title(r"$w$")
+
+        ax_all[3,0].set_title(r"$p$")
+        ax_all[3,1].set_title(r"$q$")
+        ax_all[3,2].set_title(r"$r$")
+
+        for i in range(3):
+            ax_all[0,i].set_ylabel("[m]")
+            ax_all[1,i].set_ylabel("[rad]")
+            ax_all[2,i].set_ylabel("[m/s]")
+            ax_all[3,i].set_ylabel("[rad/s]")
+
+        # Add gridlines
+        for i in range(4):
+            for j in range(3):
+                ax_all[i,j].grid(True)
+        
+        # Label bottom rows x-axes
+        for j in range(3):
+            ax_all[3,j].set_xlabel("Time [s]")
+
+        return
+    
+    def plot_all_derivatives(self):
+        fig_all, ax_all = plt.subplots(4,3)
+
+        ax_all[0,0].plot(self._t, self._Xdot[:,0])
+        ax_all[0,1].plot(self._t, self._Xdot[:,1])
+        ax_all[0,2].plot(self._t, self._Xdot[:,2])
+
+        ax_all[1,0].plot(self._t, self._Xdot[:,3])
+        ax_all[1,1].plot(self._t, self._Xdot[:,4])
+        ax_all[1,2].plot(self._t, self._Xdot[:,5])
+
+        ax_all[2,0].plot(self._t, self._Xdot[:,6])
+        ax_all[2,1].plot(self._t, self._Xdot[:,7])
+        ax_all[2,2].plot(self._t, self._Xdot[:,8])
+
+        ax_all[3,0].plot(self._t, self._Xdot[:,9])
+        ax_all[3,1].plot(self._t, self._Xdot[:,10])
+        ax_all[3,2].plot(self._t, self._Xdot[:,11])
+
+        ax_all[0,0].set_title(r"$v_n$")
+        ax_all[0,1].set_title(r"$v_e$")
+        ax_all[0,2].set_title(r"$v_d$")
+
+        ax_all[1,0].set_title(r"$p\approx\dot{\phi}$")
+        ax_all[1,1].set_title(r"$q\approx\dot{\theta}$")
+        ax_all[1,2].set_title(r"$r=\approx\dot{\psi}$")
+
+        ax_all[2,0].set_title(r"$\dot{u}$")
+        ax_all[2,1].set_title(r"$\dot{v}$")
+        ax_all[2,2].set_title(r"$\dot{w}$")
+
+        ax_all[3,0].set_title(r"$\dot{p}$")
+        ax_all[3,1].set_title(r"$\dot{q}$")
+        ax_all[3,2].set_title(r"$\dot{r}$")
+
+        for i in range(3):
+            ax_all[0,i].set_ylabel("[m/s]")
+            ax_all[1,i].set_ylabel("[rad/s]")
+            ax_all[2,i].set_ylabel("[m/s^2]")
+            ax_all[3,i].set_ylabel("[rad/s^2]")
+
+        # Add gridlines
+        for i in range(4):
+            for j in range(3):
+                ax_all[i,j].grid(True)
+        
+        # Label bottom rows x-axes
+        for j in range(3):
+            ax_all[3,j].set_xlabel("Time [s]")
+
         return
