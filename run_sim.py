@@ -26,7 +26,7 @@ Xdot = np.zeros(xdim)
 Xddot = np.zeros(xdim)
 
 ####################################################
-            #   Input Control 
+    #   Input Control (TODO: Combine with sim parameters)
 ####################################################
 
 # Input force
