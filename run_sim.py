@@ -1,11 +1,11 @@
 
 import numpy as np
-# import parameters as IC
+import parameters
 from kinematic_state import KinematicState
 from plotter import Plotter
 
 ####################################################
-            #   Propagate Simulation
+#   Propagate Simulation
 ####################################################
 
 # Initialize sim parameters
@@ -17,16 +17,18 @@ time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
 # Initialize vectors
-initial_state = KinematicState()
+ac_state = KinematicState(init_conds=parameters.initial_condtions)
 
-xdim = [nt, len(initial_state.get_state())]
+xdim = [nt, len(ac_state.get_state())]
 
 X = np.zeros(xdim)
+X[0,:] = ac_state.get_state()
+print(X[1,:])
 Xdot = np.zeros(xdim)
 Xddot = np.zeros(xdim)
 
 ####################################################
-    #   Input Control (TODO: Combine with sim parameters)
+#   Input Control (TODO: Combine with sim parameters)
 ####################################################
 
 # Input force
@@ -42,12 +44,16 @@ wn = 2.0 # [rad/s]
 zeta = 0.3 # []
 
 ####################################################
-    #   Propagate Simulation (TODO: Put in separate file/dir)
+#   Propagate Simulation (TODO: Put in separate file/dir)
 ####################################################
 
 for i in range(nt): 
 
     x = X[i,:]
+    if i == 0:
+        print("get's here")
+        print(x)
+
     xdot = Xdot[i,:]
     u = U[i,:]
 
@@ -60,7 +66,7 @@ for i in range(nt):
         X[i+1,:] = X[i,:] + xdot * dt
 
 ####################################################
-    #   Plot Results (put this in solo file/dir)
+#   Plot Results (put this in solo file/dir)
 ####################################################
     
 sim_plotter = Plotter(time, X, Xdot, Xddot)
