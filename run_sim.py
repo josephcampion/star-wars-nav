@@ -80,6 +80,8 @@ for i in range(nt):
         xdot_lat[3],
     ])
 
+    Xdot[i,:] = xdot
+
     if i < (nt-1):
         X[i+1,:] = X[i,:] + xdot * dt
         ac_state.set_state(X[i+1,:])
