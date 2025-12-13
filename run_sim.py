@@ -3,9 +3,10 @@ import numpy as np
 import parameters
 from kinematic_state import KinematicState
 from plotter import Plotter
+import dynamics
 
 ####################################################
-#   Propagate Simulation
+#   Initialize Simulation
 ####################################################
 
 # Initialize sim parameters
@@ -23,25 +24,29 @@ xdim = [nt, len(ac_state.get_state())]
 
 X = np.zeros(xdim)
 X[0,:] = ac_state.get_state()
-print(X[1,:])
 Xdot = np.zeros(xdim)
-Xddot = np.zeros(xdim)
+
+lon_dyn = dynamics.LinearDynamics4x4(
+    parameters.A_lon,
+    parameters.B_lon,
+    np.eye(4),
+    np.zeros([4,2]))
+
+lat_dyn = dynamics.LinearDynamics4x4(
+    parameters.A_lat,
+    parameters.B_lat,
+    np.eye(4),
+    np.zeros([4,2]))
 
 ####################################################
 #   Input Control (TODO: Combine with sim parameters)
 ####################################################
 
 # Input force
-amp =  3.0
+amp =  1.0
 # w_in = 1.0 # [rad/s]
 # U = amp * np.sin(w_in * time)
 U = amp * np.ones(xdim)
-
-# natural freq.
-wn = 2.0 # [rad/s]
-
-# damping ratio
-zeta = 0.3 # []
 
 ####################################################
 #   Propagate Simulation (TODO: Put in separate file/dir)
@@ -50,24 +55,38 @@ zeta = 0.3 # []
 for i in range(nt): 
 
     x = X[i,:]
-    if i == 0:
-        print("get's here")
-        print(x)
+    ac_state.set_state(x)
+    x_lon = ac_state.get_lon_state()
+    x_lat = ac_state.get_lat_state()
 
-    xdot = Xdot[i,:]
-    u = U[i,:]
+    # u = np.array([1.0, 1.0]) # step input
+    u = np.array([1.0, 0.0]) # step input
 
-    # xddot + 2*wn*zeta*xdot + wn**2*x = u
-    xddot = u - 2 * wn * zeta * xdot - wn**2 * x
-    Xddot[i,:] = xddot
+    xdot_lon = lon_dyn.propagate_state(x_lon, u)
+    xdot_lat = lon_dyn.propagate_state(x_lat, u)
+
+    xdot = np.array([
+        0.0, # TODO: insert eqn. for pn_dot
+        0.0, # TODO: insert eqn. for pe_dot
+        0.0, # TODO: insert eqn. for pd_dot
+        xdot_lat[2],
+        xdot_lon[3], # really q, or x_lon[2]
+        0.0, # really r, or x_lat[3]
+        xdot_lon[0],
+        xdot_lat[0],
+        xdot_lon[1],
+        xdot_lat[1],
+        xdot_lon[2],
+        xdot_lat[3],
+    ])
 
     if i < (nt-1):
-        Xdot[i+1,:] = Xdot[i,:] + xddot * dt
         X[i+1,:] = X[i,:] + xdot * dt
+        ac_state.set_state(X[i+1,:])
 
 ####################################################
 #   Plot Results (put this in solo file/dir)
 ####################################################
     
-sim_plotter = Plotter(time, X, Xdot, Xddot)
+sim_plotter = Plotter(time, X, Xdot)
 sim_plotter.plot_sim()

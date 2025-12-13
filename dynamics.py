@@ -16,4 +16,4 @@ class LinearDynamics4x4:
         xdot = self._A @ x + self._B @ u
         y = self._C @ x + self._D @ u
         
-        return xdot, y
+        return xdot # , y

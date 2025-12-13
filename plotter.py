@@ -10,14 +10,13 @@ class Plotter:
         # phi_dot ~= p
         # theta_dot ~= q
         # psi_dot ~= r
-    # Xddot = [etc.]
-    def __init__(self, t, X, Xdot, Xddot):
+    def __init__(self, t, X, Xdot):
         self._t = t
         self._X = X
         self._Xdot = Xdot
-        self._Xddot = Xddot
 
     def plot_sim(self):
+        # TODO: plot control inputs (de, dt, da, dr)
         self.plot_lon_axis()
         self.plot_lat_axis()
         self.plot_lin_axis()
