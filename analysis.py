@@ -1,7 +1,7 @@
 
 import numpy as np
 import control # 3rd party
-import dynamics as dyn
+import controls.dynamics as dyn
 import matplotlib.pyplot as plt
 
 A = dyn.A_lon
