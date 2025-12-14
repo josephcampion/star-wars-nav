@@ -1,7 +1,7 @@
 
 import numpy as np
-import parameters
-from kinematic_state import KinematicState
+import models.parameters as parameters
+from kinematics import KinematicState
 from plotter import Plotter
 import dynamics
 

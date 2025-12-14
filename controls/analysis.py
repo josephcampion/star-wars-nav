@@ -1,11 +1,11 @@
 
 import numpy as np
-import control
-import parameters
+import control # 3rd party
+import dynamics as dyn
 import matplotlib.pyplot as plt
 
-A = parameters.A_lon
-B = parameters.B_lon
+A = dyn.A_lon
+B = dyn.B_lon
 C = np.eye(4) # ideal sensor
 D = np.zeros([4,2])
 

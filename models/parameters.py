@@ -1,6 +1,10 @@
 
 import numpy as np
 
+# TODO: Break this file up into multiple modules
+# E.g., initial conditions for different scenarions,
+# flight dynamics parameters for different aircraft, etc.
+
 ######################################################################################
                 #   Initial Conditions
 ######################################################################################
