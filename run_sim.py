@@ -1,9 +1,9 @@
 
 import numpy as np
 import models.parameters as parameters
-from kinematics import KinematicState
+from simulation.kinematics import KinematicState
 from plotter import Plotter
-import dynamics
+from simulation import dynamics
 
 ####################################################
 #   Initialize Simulation
