@@ -112,3 +112,39 @@ B_lat = np.array([
     [N_da, N_dr],
     [0.0, 0.0]
 ])
+
+
+######################################################################################
+                #   Sensor Parameters
+######################################################################################
+
+#-------- Accelerometer --------
+accel_sigma = 0.0025*9.81  # standard deviation of accelerometers in m/s^2
+
+#-------- Rate Gyro --------
+gyro_max_bias = np.radians(5.0) # [rad/s]
+gyro_x_bias = gyro_max_bias*np.random.uniform(-1, 1)  # [rad/s] bias on x_gyro
+gyro_y_bias = gyro_max_bias*np.random.uniform(-1, 1)  # [rad/s] bias on y_gyro
+gyro_z_bias = gyro_max_bias*np.random.uniform(-1, 1)  # [rad/s] bias on z_gyro
+gyro_sigma = np.radians(0.13)  # [rad/s] standard deviation of gyros
+
+#-------- Pressure Sensor(Altitude) --------
+abs_pres_sigma = 0.01*1000  # standard deviation of absolute pressure sensors in Pascals
+
+#-------- Pressure Sensor (Airspeed) --------
+diff_pres_sigma = 0.002*1000  # standard deviation of diff pressure sensor in Pascals
+
+#-------- Magnetometer --------
+mag_beta = np.radians(1.0)
+mag_sigma = np.radians(0.03)
+
+#-------- GPS --------
+ts_gps = 0.2
+tau_gps = 1. / 1100.  # 1 / s
+
+eta_gps_n = 0.01
+eta_gps_e = 0.01
+eta_gps_h = 0.03
+
+# gps_Vg_sigma = 0.005
+# gps_course_sigma = gps_Vg_sigma / 20
