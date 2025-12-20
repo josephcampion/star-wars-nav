@@ -1,9 +1,13 @@
 
-# import sensors
+import sensors
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Initialize sim parameters
+
+####################################################
+    #   Initialize Simulation Parameters
+####################################################
+
 Tsim = 10.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
@@ -11,22 +15,61 @@ t0 = 0.0
 time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
-# TODO: Get these from parameters file
-sensor_bias = 0.1 # [m/s]
-noise_std = 0.1
+# Set truth motion for sensor testing
+p_truth = 1.0 * np.sin(3*time)
+q_truth = 2.0 * np.sin(2*time)
+r_truth = 3.0 * np.sin(1*time)
+# p_truth = np.ones(nt)
 
-x_truth = 2.0 * np.sin(3*time)
-# x_truth = np.ones(nt)
-x_sensor = np.zeros(nt)
+x_gyro_meas = np.zeros(nt)
+y_gyro_meas = np.zeros(nt)
+z_gyro_meas = np.zeros(nt)
+
+####################################################
+    #   Run Simulation of Sensor Models
+####################################################
+
+# Make sensor models
+# x_gyro = sensors.Gyroscope(bias=0.1, noise_std=0.1)
+# y_gyro = sensors.Gyroscope(bias=0.1, noise_std=0.1)
+# z_gyro = sensors.Gyroscope(bias=0.1, noise_std=0.1)
+x_gyro = sensors.Gyroscope(0.1, 0.1)
+y_gyro = sensors.Gyroscope(0.1, 0.1)
+z_gyro = sensors.Gyroscope(0.1, 0.1)
 
 for i in range(nt):
-    x_sensor[i] = x_truth[i] + sensor_bias + np.random.normal(0, noise_std)
+    x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])
+    y_gyro_meas[i] = y_gyro.get_sensor_data(q_truth[i])
+    z_gyro_meas[i] = z_gyro.get_sensor_data(r_truth[i])
 
-plt.plot(time, x_sensor, label='Sensor')
-plt.plot(time, x_truth, label='Truth')
-plt.grid(True)
-plt.xlabel('Time [s]')
-plt.ylabel('Angular Velocity [rad/s]')
-plt.title('Angular Velocity Sensor vs Truth')
-plt.legend()
+####################################################
+            #   Plot Results
+####################################################
+
+_, axs = plt.subplots(3,1)
+
+axs[0].plot(time, p_truth, label='Sensor')
+axs[0].grid(True)
+axs[0].plot(time, x_gyro_meas, label='Truth')
+# axs[0].set_xlabel('Time [s]')
+axs[0].set_ylabel('Angular Velocity [rad/s]')
+axs[0].set_title('Angular Velocity Sensor vs Truth')
+axs[0].legend()
+
+axs[1].plot(time, q_truth, label='Sensor')
+axs[1].grid(True)
+axs[1].plot(time, y_gyro_meas, label='Truth')
+# axs[1].set_xlabel('Time [s]')
+axs[1].set_ylabel('Angular Velocity [rad/s]')
+# axs[1].set_title('Angular Velocity Sensor vs Truth')
+axs[1].legend()
+
+axs[2].plot(time, r_truth, label='Sensor')
+axs[2].grid(True)
+axs[2].plot(time, z_gyro_meas, label='Truth')
+axs[2].set_xlabel('Time [s]')
+axs[2].set_ylabel('Angular Velocity [rad/s]')
+# axs[2].set_title('Angular Velocity Sensor vs Truth')
+axs[2].legend()
+
 plt.show()
