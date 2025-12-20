@@ -41,9 +41,37 @@ class InertialMeasurementUnit:
     def get_sens_accel_meas(self, sens_accel_truth):
         return np.array([self._accels[i].get_sensor_data(sens_accel_truth[i]) for i in range(3)])
 
-# class GPS(SensorModel):
-#     def __init__(self):
-#         super().__init__("GPS")
+class GPS():
+    def __init__(self, noise_std_n, noise_std_e, noise_std_d, tau_gps, T_samp):
+        self._noise_std_n = noise_std_n
+        self._noise_std_e = noise_std_e
+        self._noise_std_d = noise_std_d
+        self._tau_gps = tau_gps
+        self._T_samp = T_samp
+        self._gps_error_n = 0.0
+        self._gps_error_e = 0.0
+        self._gps_error_d = 0.0
+
+    def update_gps_error(self):
+        tau_gps = self._tau_gps
+        Ts = self._T_samp
+        k_decay = np.exp(-tau_gps * Ts)
+
+        self._gps_error_n = k_decay * self._gps_error_n + np.random.normal(0, self._noise_std_n)
+        self._gps_error_e = k_decay * self._gps_error_e + np.random.normal(0, self._noise_std_e)
+        self._gps_error_d = k_decay * self._gps_error_d + np.random.normal(0, self._noise_std_d)
+
+    def get_gps_error(self):
+        return np.array([
+            self._gps_error_n,
+            self._gps_error_e,
+            self._gps_error_d
+        ])
+
+    def get_gps_data(self, pos_truth):
+        # self.update_gps_error()
+        return pos_truth + self.get_gps_error()
+ 
 
 ############### TODO: Implement and test these #######################
 
