@@ -6,14 +6,17 @@ from plotter import Plotter
 from simulation import dynamics
 
 ####################################################
-#   Initialize Simulation
+#   Initialize Simulation (TODO: move this to 'simulation')
 ####################################################
+
+# TODO: Turn this into sim = Simulation(dt,T,dyn_fun)
 
 # Initialize sim parameters
 Tsim = 10.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
 
+# This can get figured out in Simulation class:
 time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
@@ -51,6 +54,8 @@ U = amp * np.ones(xdim)
 ####################################################
 #   Propagate Simulation (TODO: Put in separate file/dir)
 ####################################################
+
+# TODO: turn this into 'sim.run()'
 
 for i in range(nt): 
 
