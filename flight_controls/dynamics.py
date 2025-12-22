@@ -74,3 +74,13 @@ B_lat = np.array([
     [N_da, N_dr],
     [0.0, 0.0]
 ])
+
+# B_lat_da = np.array([
+#     [Y_da],
+#     [L_da],
+#     [N_da],
+#     [0.0]
+# ])
+
+# B_lat_da = np.array([[B_lat[i,0]] for i in range(4)])
+
