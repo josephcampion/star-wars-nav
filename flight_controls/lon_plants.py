@@ -31,11 +31,11 @@ def get_de_to_q_tf(A_lon, B_lon, C_lon, D_lon):
 def get_dt_to_u_tf(A_lon, B_lon, C_lon, D_lon):
     return get_u_to_y_tf(A_lon, B_lon, C_lon, D_lon, 1, 0)
 
-def get_dt_to_q_tf(A_lon, B_lon, C_lon, D_lon):
-    return get_u_to_y_tf(A_lon, B_lon, C_lon, D_lon, 1, 2)
-
 def get_de_to_u_tf(A_lon, B_lon, C_lon, D_lon):
     return get_u_to_y_tf(A_lon, B_lon, C_lon, D_lon, 0, 0)
+
+def get_dt_to_q_tf(A_lon, B_lon, C_lon, D_lon):
+    return get_u_to_y_tf(A_lon, B_lon, C_lon, D_lon, 1, 2)
 
 
 ####################################################
@@ -86,14 +86,8 @@ ct.nichols_plot(tf_dt_to_u)
 
 ss_lon = ct.ss(A_lon, B_lon, C_lon, D_lon)
 
-# ss_lat = ct.ss(A_lat, B_lat, C_lat, D_lat)
-
 fig, ax = plt.subplots()
 ct.pzmap(ss_lon)
 plt.grid(True)
-
-# fig, ax = plt.subplots()
-# ct.pzmap(ss_lat)
-# plt.grid(True)
 
 plt.show()
