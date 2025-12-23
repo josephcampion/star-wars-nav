@@ -57,7 +57,7 @@ def get_pitch_damper_tf(A_lon, B_lon, C_lon, D_lon, kp_q):
 
 
 ####################################################
-    #   TODO: Open-Loop Nichols
+    #   Open-Loop Bode & Nichols
 ####################################################
 
 tf_pitch_damper = get_pitch_damper_tf(A_lon, B_lon, C_lon, D_lon, kp_q)
