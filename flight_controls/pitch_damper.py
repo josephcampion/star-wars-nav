@@ -3,7 +3,7 @@ import numpy as np
 import control as ct # 3rd party
 import models.parameters as pm
 import matplotlib.pyplot as plt
-from flight_controls.utils import get_u_to_y_tf
+from flight_controls.utils import get_u_to_y_tf, plot_lon_step_response
 
 
 ####################################################
@@ -19,10 +19,10 @@ D_lon = np.zeros([4,2])
     #   Get Pitch Damper Gain (& Matrix)
 ####################################################
 
-kp_q = 0.075
+kp_q = 0.05
 K_lon = np.zeros([2,4])
 K_lon[0,2] = -kp_q
-print(K_lon)
+# print(K_lon)
 
 """
 NOTE: Pitch Damper has "extra" minus sign!
@@ -69,9 +69,117 @@ fig, ax = plt.subplots()
 ct.nichols_plot(tf_pitch_damper)
 
 ####################################################
-        #   TODO: Step & Gust Responses
+            #   Step Response
 ####################################################
 
+ss_lon = ct.ss(A_lon, B_lon, C_lon, D_lon)
+
+response = ct.step_response(ss_lon, T=10.0)
+t = response.time
+x = response.x[:,0,:] # elevator response
+
+#------ Plot Bare Airframe Response -----#
+
+fig, ax = plt.subplots(2,2)
+
+ax[0,0].plot(t, x[0], label="A/C")
+ax[0,1].plot(t, x[1], label="A/C")
+ax[1,0].plot(t, x[2], label="A/C")
+ax[1,1].plot(t, x[3], label="A/C")
+
+ax[0,0].set_title(r'$u$')
+ax[0,1].set_title(r'$w$')
+ax[1,0].set_title(r'$q$')
+ax[1,1].set_title(r'$\theta$')
+
+for i in range(2):
+    for j in range(2):
+        ax[i,j].grid(True)
+        # ax[i,j].legend()
+
+ax[0,0].set_ylabel('[kts]')
+ax[1,0].set_ylabel('[rad(/sec)]')
+
+ax[1,0].set_xlabel('Time [s]')
+ax[1,1].set_xlabel('Time [s]')
+
+#------- Compare to Pitch Damper --------#
+
+ss_pitch_damper = ct.ss(A_lon - B_lon @ K_lon, B_lon, C_lon, D_lon)
+
+response = ct.step_response(ss_pitch_damper, T=10.0)
+t = response.time
+x = response.x[:,0,:] # elevator response
+
+ax[0,0].plot(t, x[0], label="SAS")
+ax[0,1].plot(t, x[1], label="SAS")
+ax[1,0].plot(t, x[2], label="SAS")
+ax[1,1].plot(t, x[3], label="SAS")
+
+
+plt.suptitle("A/C vs. SAS Response")
+
+# plt.show()
+
+####################################################
+            #   Doublet Response
+####################################################
+
+timepts = np.linspace(0, 10) # num=50
+U = np.zeros([2,len(timepts)])
+for i in range(len(timepts)):
+    if timepts[i] < 2.5:
+        print(timepts[i])
+        U[0,i] = 1.0
+print(U)
+
+# t, y = ct.forced_response(sys, timepts, u)
+
+ss_lon = ct.ss(A_lon, B_lon, C_lon, D_lon)
+
+response = ct.forced_response(ss_lon, timepts, U)
+t = response.time
+x = response.x # elevator response
+
+#------ Plot Bare Airframe Response -----#
+
+fig, ax = plt.subplots(2,2)
+
+ax[0,0].plot(t, x[0], label="A/C")
+ax[0,1].plot(t, x[1], label="A/C")
+ax[1,0].plot(t, x[2], label="A/C")
+ax[1,1].plot(t, x[3], label="A/C")
+
+ax[0,0].set_title(r'$u$')
+ax[0,1].set_title(r'$w$')
+ax[1,0].set_title(r'$q$')
+ax[1,1].set_title(r'$\theta$')
+
+for i in range(2):
+    for j in range(2):
+        ax[i,j].grid(True)
+        # ax[i,j].legend()
+
+ax[0,0].set_ylabel('[kts]')
+ax[1,0].set_ylabel('[rad(/sec)]')
+
+ax[1,0].set_xlabel('Time [s]')
+ax[1,1].set_xlabel('Time [s]')
+
+#------- Compare to Pitch Damper --------#
+
+ss_pitch_damper = ct.ss(A_lon - B_lon @ K_lon, B_lon, C_lon, D_lon)
+
+response = ct.forced_response(ss_pitch_damper, timepts, U)
+t = response.time
+x = response.x # elevator response
+
+ax[0,0].plot(t, x[0], label="SAS")
+ax[0,1].plot(t, x[1], label="SAS")
+ax[1,0].plot(t, x[2], label="SAS")
+ax[1,1].plot(t, x[3], label="SAS")
+
+plt.suptitle("A/C vs. SAS Response")
 
 ####################################################
                 # TODO: Root Locus
