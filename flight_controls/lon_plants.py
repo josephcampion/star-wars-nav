@@ -3,7 +3,7 @@ import numpy as np
 import control as ct # 3rd party
 import models.parameters as pm
 import matplotlib.pyplot as plt
-from flight_controls.utils import get_u_to_y_tf
+from flight_controls.utils import get_u_to_y_tf, plot_lon_step_response
 
 
 ####################################################
@@ -14,6 +14,31 @@ A_lon = pm.A_lon
 B_lon = pm.B_lon
 C_lon = np.eye(4) # ideal sensor
 D_lon = np.zeros([4,2])
+
+ss_lon = ct.ss(A_lon, B_lon, C_lon, D_lon)
+
+####################################################
+            #   Step Responses
+####################################################
+
+response = ct.step_response(ss_lon)
+# response.plot() # this doesn't work...
+# print(dir(response))
+t = response.time
+
+#------ Plot elevator step response -----#
+
+x_de = response.states[:,0,:]
+
+plot_lon_step_response(t, x_de, label="Elevator", amplitude=3.e-3)
+
+#------ Plot throttle step response -----#
+
+x_dt = response.states[:,1,:]
+
+plot_lon_step_response(t, x_dt, label="Throttle")
+
+plt.show()
 
 
 ####################################################
