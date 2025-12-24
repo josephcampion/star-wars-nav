@@ -1,5 +1,6 @@
 
 import numpy as np
+from numpy.random import beta
 
 
 ###################################################
@@ -49,16 +50,15 @@ C_L_q = 0.0
 C_D_q = 0.0
 C_m_q = -3.6
 
-C_D_delta_e = -0.36
+C_L_delta_e = -0.36
 C_D_delta_e = 0.0
 C_m_delta_e = -0.5
 
 C_prop = 1.0
 M = 50.0
-alpha_0 = 0.4712
 eta = 0.1592
 
-#----------------- Lateral -----------------#
+#------------------- Lateral -------------------#
 
 C_D_p = 0.0437
 
@@ -85,6 +85,37 @@ C_n_delta_a = 0.06
 C_Y_delta_r = -0.17
 C_l_delta_r = 0.105
 C_n_delta_r = -0.032
+
+###################################################
+            #   Trim Conditions
+###################################################
+
+# TODO: Make this a lookup table (based on airspeed).
+
+#----------------- Longitudinal ----------------#
+
+V_a_0 = 20.0 # [m/s] (from Wikipedia, ~45mph)
+alpha_0_deg = 0.4712 # [deg] (from MAV textbook, Appendix E2)
+alpha_0 = np.deg2rad(alpha_0_deg) # [rad]
+theta_0 = alpha_0
+u_0 = V_a_0 * np.cos(theta_0)
+w_0 = -V_a_0 * np.sin(theta_0)
+q_0 = 0.0 # [rad/s]
+
+#------------------- Lateral -------------------#
+
+v_0 = 0.0 # [kts]
+p_0 = 0.0 # [rad/s]
+r_0 = 0.0 # [rad/s]
+phi_0 = 0.0 # [rad/s]
+beta_0 = 0.0 # [rad]
+
+#------------------- Control -------------------#
+
+delta_e_0 = 0.0 # TODO: Solve from trim
+delta_t_0 = 0.0 # TODO: Solve from trim
+delta_a_0 = 0.0
+delta_r_0 = 0.0
 
 ###################################################
             #   Linearized Dynamics
@@ -126,10 +157,22 @@ B_lon = np.array([
 
 # Lateral state-space matrix components
 Y_v = -0.5
+# print("Y_v = ", Y_v)
+Y_v = (rho * S * b * v_0 / (4 * m * V_a_0)) * (C_Y_p * p_0 + C_Y_r * r_0) + \
+    (rho * S * v_0 / m) * (C_Y_0 + C_Y_beta * beta_0 + C_Y_delta_a * delta_a_0 + C_Y_delta_r * delta_r_0) + \
+        (rho * S * C_Y_beta / (2 * m)) * V_a_0 # or np.sqrt(u_0**2 + w_0**2)
+# Y_v = (rho * S * C_Y_beta / (2 * m)) * np.sqrt(u_0**2 + w_0**2)
+# print("Y_v = ", Y_v)
 Y_p = 0.0
+Y_p = w_0 + ((rho * V_a_0 * S * b) / (4 * m)) * C_Y_p
+# print("Y_p = ", Y_p)
+# NOTE: I think this is so much bigger because it's v and not beta.
 Y_r = 1.0
+Y_r = -u_0 + ((rho * V_a_0 * S * b) / (4 * m)) * C_Y_r
+print("Y_r = ", Y_r)
 
 L_v = -0.1
+Lv = ((rho * S * b**2 * v_0) / (4 * V_a_0)) * (C_)
 L_p = -4.0 # roll damping
 L_r = 0.7 # di-hedral effect?
 

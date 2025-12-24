@@ -1,7 +1,9 @@
 
 import numpy as np
+import models.aerosonde_uav as ac
+from models.utils import GammaInertiaTerms
 
-# TODO: Make this a function of altitude?
+# TODO: Make this a function of altitude.
 AIR_DENSITY_KGM3 = 1.2682 # [kg*m^3]
 
 class MassProperties:
@@ -24,18 +26,6 @@ class MassProperties:
         else:
             print("Inertia list needs to be of len 4 or 6.")
 
-        # TODO: Replace with cross product/matrix calc
-        # or do that with a unit test...
-        Gamma = Jx * Jz - Jxz**2
-        Gamma1 = Jxz * (Jx - Jy + Jz) / Gamma
-        Gamma2 = (Jz * (Jz - Jy) + Jxz**2) / Gamma
-        Gamma3 = Jz / Gamma
-        Gamma4 = Jxz / Gamma
-        Gamma5 = (Jz - Jx) / Jy
-        Gamma6 = Jxz / Jy
-        Gamma7 = ((Jx - Jy) * Jx + Jxz**2) / Gamma
-        Gamma8 = Jx / Gamma
-
         self._m = mass
         self._Jx = Jx
         self._Jy = Jy
@@ -43,81 +33,97 @@ class MassProperties:
         self._Jxy = Jxy
         self._Jxz = Jxz
         self._Jyz = Jyz
-        self._Gamma = Gamma
-        self._Gamma1 = Gamma1
-        self._Gamma2 = Gamma2
-        self._Gamma3 = Gamma3
-        self._Gamma4 = Gamma4
-        self._Gamma5 = Gamma5
-        self._Gamma6 = Gamma6
-        self._Gamma7 = Gamma7
-        self._Gamma8 = Gamma8
+        self._Gamma = GammaInertiaTerms(Jx, Jy, Jz, Jxz)
 
 # end MassProperties
 
 class AerodynamicCoefficients:
     def __init__(self, aero_coeffs_list):
-
+        if len(aero_coeffs_list) != 30:
+            print("aero_coeffs_list should be length 30.")
         #----------------- Longitudinal ----------------#
-        C_L_0 = 0.28
-        C_D_0 = 0.03
-        C_m_0 = -0.02338
-
-        C_L_alpha = 3.45
-        C_D_alpha = 0.30
-        C_m_alpha = -0.38
-
-        C_L_q = 0.0
-        C_D_q = 0.0
-        C_m_q = -3.6
-
-        C_L_delta_e = -0.36
-        C_D_delta_e = 0.0
-        C_m_delta_e = -0.5
-
-        # C_D_p = 0.0437
-
+        self._C_L_0 = aero_coeffs_list[0]
+        self._C_D_0 =  aero_coeffs_list[1]
+        self._C_m_0 =  aero_coeffs_list[2]
+        self._C_L_alpha =  aero_coeffs_list[3]
+        self._C_D_alpha =  aero_coeffs_list[4]
+        self._C_m_alpha =  aero_coeffs_list[5]
+        self._C_L_q =  aero_coeffs_list[6]
+        self._C_D_q =  aero_coeffs_list[7]
+        self._C_m_q =  aero_coeffs_list[8]
+        self._C_L_delta_e =  aero_coeffs_list[9]
+        self._C_D_delta_e =  aero_coeffs_list[10]
+        self._C_m_delta_e =  aero_coeffs_list[11]
+        # self._C_D_p = 0.0437
         #----------------- Lateral -----------------#
-
-        C_Y_0 = 0.0
-        C_l_0 = 0.0
-        C_n_0 = 0.0
-
-        C_Y_beta = -0.98
-        C_l_beta = -0.12
-        C_n_beta = 0.25
-
-        C_Y_p = 0.0
-        C_l_p = -0.26
-        C_n_p = 0.022
-
-        C_Y_r = 0.0
-        C_l_r = 0.14
-        C_n_r = -0.35
-
-        C_Y_delta_a = 0.0
-        C_l_delta_a = 0.08
-        C_n_delta_a = 0.06
-
-        C_Y_delta_r = -0.17
-        C_l_delta_r = 0.105
-        C_n_delta_r = -0.032
+        self._C_Y_0 = aero_coeffs_list[12]
+        self._C_l_0 = aero_coeffs_list[13]
+        self._C_n_0 = aero_coeffs_list[14]
+        self._C_Y_beta = aero_coeffs_list[15]
+        self._C_l_beta = aero_coeffs_list[16]
+        self._C_n_beta = aero_coeffs_list[17]
+        self._C_Y_p = aero_coeffs_list[18]
+        self._C_l_p = aero_coeffs_list[19]
+        self._C_n_p = aero_coeffs_list[20]
+        self._C_Y_r = aero_coeffs_list[21]
+        self._C_l_r = aero_coeffs_list[22]
+        self._C_n_r = aero_coeffs_list[23]
+        self._C_Y_delta_a = aero_coeffs_list[24]
+        self._C_l_delta_a = aero_coeffs_list[25]
+        self._C_n_delta_a = aero_coeffs_list[26]
+        self._C_Y_delta_r = aero_coeffs_list[27]
+        self._C_l_delta_r = aero_coeffs_list[28]
+        self._C_n_delta_r = aero_coeffs_list[29]
 
 # end AerodynamicCoefficients
         
 class EngineProperties:
     def __init__(self, engine_params_list):
+        if len(engine_params_list) != 8:
+            print("engine_params_list should be length 8.")
+        self._S_prop = engine_params_list[0]
+        self._k_motor = engine_params_list[1]
+        self._k_T_p = engine_params_list[2]
+        self._k_Omega = engine_params_list[3]
+        self._e = engine_params_list[4]
+        self._C_prop = engine_params_list[5]
+        self._M = engine_params_list[6]
+        self._eta = engine_params_list[7]
 
-        S_prop = 0.2027 # [m^2]
-        k_motor = 80.0 # [-]
-        k_T_p = 0 # [-]
-        k_Omega = 0.0 # [-]
-        e = 0.9 # [-]
 
-        C_prop = 1.0
-        M = 50.0
-        alpha_0 = 0.4712
-        eta = 0.1592
+class LinearStateSpaceModel:
+    def __init__(self, mass_props, engine_props, aero_coeffs, trim_conds):
+        self._mass_props = mass_props
+        self._engine_props = engine_props
+        self._aero_coeffs = aero_coeffs
+        self._trim_conds = trim_conds
+        
 
-# class LinearStateSpaceModel:
-#     def __init__(self, mass_props, engine_props, aero_coeffs):
+if __name__ == "__main__":
+
+    mass_props = MassProperties(ac.m, [ac.Jx, ac.Jy, ac.Jz, ac.Jxz])
+
+    engine_props = EngineProperties([
+        ac.S_prop, ac.k_motor, ac.k_T_p, ac.k_Omega, ac.e, \
+        ac.C_prop, ac.M, ac.eta
+    ])
+
+    aero_coeffs = AerodynamicCoefficients([
+        ac.C_L_0, ac.C_D_0, ac.C_m_0, \
+        ac.C_L_alpha, ac.C_D_alpha, ac.C_m_alpha, \
+        ac.C_L_q, ac.C_D_q, ac.C_m_q, \
+        ac.C_L_delta_e, ac.C_D_delta_e, ac.C_m_delta_e, \
+        ac.C_Y_0, ac.C_l_0, ac.C_n_0, \
+        ac.C_Y_beta, ac.C_l_beta, ac.C_n_beta, \
+        ac.C_Y_p, ac.C_l_p, ac.C_n_p, \
+        ac.C_Y_r, ac.C_l_r, ac.C_n_r, \
+        ac.C_Y_delta_a, ac.C_l_delta_a, ac.C_n_delta_a, \
+        ac.C_Y_delta_r, ac.C_l_delta_r, ac.C_n_delta_r
+    ])
+
+    # print(dir(mass_props))
+    # print(dir(engine_props))
+    # print(dir(aero_coeffs))
+
+
+
