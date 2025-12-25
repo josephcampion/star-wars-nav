@@ -30,3 +30,9 @@ class KinematicState:
         ])
 
     # TODO: Output airspeed, course, vertical flight path angle
+
+####################################################
+# TODO: Make state derivatives given forces & moments
+####################################################
+
+
