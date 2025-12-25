@@ -124,6 +124,3 @@ if __name__ == "__main__":
     # print(dir(mass_props))
     # print(dir(engine_props))
     # print(dir(aero_coeffs))
-
-
-

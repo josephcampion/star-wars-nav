@@ -30,3 +30,28 @@ class KinematicState:
         ])
 
     # TODO: Output airspeed, course, vertical flight path angle
+
+def cross_mat(v):
+    return np.array([
+        [0.0,   -v[2],  v[1]],
+        [v[2],  0.0,    -v[0]],
+        [-v[1], v[0],   0.0]
+    ])
+
+def inertia_mat(Jx, Jy, Jz, Jxz):
+    return np.array([
+        [Jx,    0.0,    -Jxz],
+        [0.0,   Jy,     0.0],
+        [-Jxz,  0.0,    Jz]
+    ])
+
+def inertia_mat_inv(Jx, Jy, Jz, Jxz):
+
+    gamma = Jz*Jz - Jxz**2
+
+    return np.array([
+        [Jz/gamma,  0.0,    Jxz/gamma],
+        [0.0,       1/Jy,   0.0],
+        [Jxz/gamma, 0.0,    Jx/gamma]
+    ])
+

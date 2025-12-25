@@ -48,3 +48,27 @@ def get_X_and_Z_derivatives(alpha, \
         C_Z_q_of_alpha,
         C_Z_delta_e_of_alpha,
     ])
+
+# TODO: Do unit tests on this, and compare with rotation math.
+def get_p_and_r_derivatives(gamma3, gamma4, gamma8, \
+    C_l_0, C_l_beta, C_l_p, C_l_r, C_l_delta_a, C_l_delta_r, \
+    C_n_0, C_n_beta, C_n_p, C_n_r, C_n_delta_a, C_n_delta_r):
+
+    C_p_0 = gamma3 * C_l_0 + gamma4 * C_n_0
+    C_p_beta = gamma3 * C_l_beta + gamma4 * C_n_beta
+    C_p_p = gamma3 * C_l_p + gamma4 * C_n_p
+    C_p_r = gamma3 * C_l_r + gamma4 * C_n_r
+    C_p_delta_a = gamma3 * C_l_delta_a + gamma4 * C_n_delta_a
+    C_p_delta_r = gamma3 * C_l_delta_r + gamma4 * C_n_delta_r
+
+    C_r_0 = gamma4 * C_l_0 + gamma8 * C_n_0
+    C_r_beta = gamma4 * C_l_beta + gamma8 * C_n_beta
+    C_r_p = gamma4 * C_l_p + gamma8 * C_n_p
+    C_r_r = gamma4 * C_l_r + gamma8 * C_n_r
+    C_r_delta_a = gamma4 * C_l_delta_a + gamma8 * C_n_delta_a
+    C_r_delta_r = gamma4 * C_l_delta_r + gamma8 * C_n_delta_r
+
+    return np.array([
+        C_p_0, C_p_beta, C_p_p, C_p_r, C_p_delta_a, C_p_delta_r, \
+        C_r_0, C_r_beta, C_r_p, C_r_r, C_r_delta_a, C_r_delta_r
+    ])
