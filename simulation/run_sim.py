@@ -1,7 +1,7 @@
 
 import numpy as np
 import models.parameters as parameters
-from simulation.kinematics import KinematicState
+from simulation.kinematics import LinearKinematicState 
 from plotter import Plotter
 from simulation import dynamics
 
@@ -21,7 +21,7 @@ time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
 # Initialize vectors
-ac_state = KinematicState(init_conds=parameters.initial_condtions)
+ac_state = LinearKinematicState(init_conds=parameters.initial_condtions)
 
 xdim = [nt, len(ac_state.get_state())]
 
@@ -68,18 +68,18 @@ for i in range(nt):
     u = np.array([1.0, 0.0]) # step input
 
     xdot_lon = lon_dyn.propagate_state(x_lon, u)
-    xdot_lat = lon_dyn.propagate_state(x_lat, u)
+    xdot_lat = lat_dyn.propagate_state(x_lat, u)
 
     xdot = np.array([
         0.0, # TODO: insert eqn. for pn_dot
         0.0, # TODO: insert eqn. for pe_dot
         0.0, # TODO: insert eqn. for pd_dot
-        xdot_lat[2],
-        xdot_lon[3], # really q, or x_lon[2]
-        0.0, # really r, or x_lat[3]
         xdot_lon[0],
         xdot_lat[0],
         xdot_lon[1],
+        xdot_lat[2],
+        xdot_lon[3], # really q, or x_lon[2]
+        0.0, # really r, or x_lat[3]
         xdot_lat[1],
         xdot_lon[2],
         xdot_lat[3],
