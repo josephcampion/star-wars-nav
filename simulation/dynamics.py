@@ -32,3 +32,20 @@ class ForcesAndMoments:
 
     def get_propulsion_forces(self):
         pass
+
+def inertia_mat(Jx, Jy, Jz, Jxz):
+    return np.array([
+        [Jx,    0.0,    -Jxz],
+        [0.0,   Jy,     0.0],
+        [-Jxz,  0.0,    Jz]
+    ])
+
+def inertia_mat_inv(Jx, Jy, Jz, Jxz):
+
+    gamma = Jz*Jz - Jxz**2
+
+    return np.array([
+        [Jz/gamma,  0.0,    Jxz/gamma],
+        [0.0,       1/Jy,   0.0],
+        [Jxz/gamma, 0.0,    Jx/gamma]
+    ])

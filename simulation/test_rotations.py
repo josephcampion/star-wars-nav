@@ -1,11 +1,9 @@
 
 import numpy as np
 from pytest import approx
-import simulation.kinematics as kt
+import simulation.rotations as rt
 
 #---------- Rotation Matrices ------------#
-
-# DCM_phi = rot(phi_rad, 0)
 
 def get_dcm_ned2bod_explicit(roll, pitch, yaw):
 
@@ -24,8 +22,7 @@ def get_dcm_ned2bod_explicit(roll, pitch, yaw):
         [cr*sp*cy+sr*sy, cr*sp*sy-sr*cy, cr*cp]
     ])
 
-# true_mat_3x3 = np.array([[True for i in range(3)] for j in range(3)])
-
+# NOTE: Run 'pytest -s' to see print statements.
 def test_get_dcm_ned2bod():
 
     roll = np.random.uniform(low=-np.pi, high=np.pi)
@@ -36,7 +33,7 @@ def test_get_dcm_ned2bod():
     print("pitch = ", np.rad2deg(pitch), " [deg]")
     print("yaw = ", np.rad2deg(yaw), " [deg]\n")
 
-    DCM_ned2bod = kt.get_dcm_ned2bod(roll, pitch, yaw)
+    DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, yaw)
 
     DCM_ned2bod_explicit = get_dcm_ned2bod_explicit(roll, pitch, yaw)
 
