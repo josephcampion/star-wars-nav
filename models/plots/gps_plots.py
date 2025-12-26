@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sensors import GPS
+from models.sensors import GPS
 
 ####################################################
     #   Initialize Simulation Parameters

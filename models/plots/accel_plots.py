@@ -1,7 +1,8 @@
 
-import sensors
 import numpy as np
 import matplotlib.pyplot as plt
+
+from models.sensors import Accelerometer
 
 ####################################################
     #   Initialize Simulation Parameters
@@ -28,9 +29,9 @@ z_accel_meas = np.zeros(nt)
 ####################################################
 
 # Make sensor models
-x_accel = sensors.Accelerometer(0.05, 0.2)
-y_accel = sensors.Accelerometer(0.05, 0.2)
-z_accel = sensors.Accelerometer(0.05, 0.2)
+x_accel = Accelerometer(0.05, 0.2)
+y_accel = Accelerometer(0.05, 0.2)
+z_accel = Accelerometer(0.05, 0.2)
 
 for i in range(nt):
     x_accel_meas[i] = x_accel.get_sensor_data(ax_truth[i])
