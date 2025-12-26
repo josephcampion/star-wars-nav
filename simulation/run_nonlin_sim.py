@@ -32,20 +32,23 @@ X[0,:] = ac_state.get_state()
 Xdot = np.zeros(xdim)
 
 ####################################################
-#   Input Forces & Moments (TODO: Control)
+#   Input Forces & Moments (TODO: Add Control)
 ####################################################
 
-amp =  0.1 # [N] or [N*m]
-w_in = 1.0 # [rad/s]
-u_sin_wave = np.sin(w_in * time)
-
+amp =  1.0 # [N] or [N*m]
 U = np.zeros([nt, 6])
-U[:,0] = 10.0 * amp * np.ones(nt) # Fx
+
+# Step Inputs
+U[:,0] = amp * np.ones(nt) # Fx
 # U[:,1] = amp * np.ones(nt) # Fy
 # U[:,2] = amp * np.ones(nt) # Fz
 # U[:,3] = amp * np.ones(nt) # Mx
 # U[:,4] = amp * np.ones(nt) # My
 # U[:,5] = amp * np.ones(nt) # Mz
+
+# Sine Inputs
+w_in = 1.0 # [rad/s]
+u_sin_wave = amp * np.sin(w_in * time)
 # U[:,0] = amp * u_sin_wave # Fx
 # U[:,1] = amp * -u_sin_wave # Fy
 # U[:,2] = amp * u_sin_wave # Fz
@@ -72,7 +75,7 @@ for i in range(nt):
         ac_state.set_state(X[i+1,:])
 
 ####################################################
-#   Plot Results (put this in solo file/dir)
+#                   Plot Results
 ####################################################
     
 sim_plotter = Plotter(time, X, Xdot)

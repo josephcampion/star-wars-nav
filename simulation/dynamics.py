@@ -1,6 +1,7 @@
 
 
 import numpy as np
+import simulation.rotations as rt
 
 class LinearDynamics4x4:
     # xdot = A * x + B * u
@@ -18,6 +19,18 @@ class LinearDynamics4x4:
         
         return xdot # , y
 
+def get_gravity_force(m, roll, pitch):
+
+    GRAVITY_ACCELERATION = 9.81 # [m/s^2]
+    
+    DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, 0.0)
+
+    F_grav_ned = np.array([0.0, 0.0, m * GRAVITY_ACCELERATION])
+
+    F_grav_bod = DCM_ned2bod @ F_grav_ned
+
+    return F_grav_bod
+
 # TODO: Produce [fx, fy, fz]^T and [l, m, n]^T 
 # given control inputs and ambient conditions.
 class ForcesAndMoments:
@@ -25,9 +38,6 @@ class ForcesAndMoments:
         pass
 
     def get_aero_forces_and_moments(self):
-        pass
-
-    def get_gravitational_force(self):
         pass
 
     def get_propulsion_forces(self):
