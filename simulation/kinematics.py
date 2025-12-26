@@ -1,5 +1,7 @@
 
 import numpy as np
+import simulation.rotations as rt
+import models.mass_props as mp
 
 class KinematicState:
     def __init__(self, init_conds=np.zeros(12)):
@@ -77,5 +79,31 @@ class NonlinearKinematicState(KinematicState):
     def __init__(self, init_conds=np.zeros(12)):
         super().__init__(init_conds=init_conds)
 
-    def solve_f_equals_ma(self, F, M):
-        pass
+    # For these simulations, assuming NED is inertial frame.
+    def solve_f_equals_ma(self, mass_props, F, M):
+
+        roll = self._phi
+        pitch = self._theta
+        m = mass_props.get_mass()
+        J = mass_props.get_inertia_matrix()
+        Jinv = mass_props.get_inertia_matrix_inv()
+
+        uvw = np.array([self._u, self._v, self._w])
+        pqr = np.array([self._p, self._q, self._r])
+
+        # pned_dot = DCM_bod2ned * uvw == uvw_ned
+        DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, self._psi)
+        DCM_bod2ned = DCM_ned2bod.T
+        pned_dot = DCM_bod2ned @ uvw
+
+        # F = m * a = m * v_ned_dot = m * (uvw_dot + cross(pqr, uvw))
+        uvw_dot = F / m - np.cross(pqr, uvw)
+
+        A_rpy_dot_to_pqr = rt.get_pqr_to_rpy_dot(roll, pitch)
+        rpy_dot = A_rpy_dot_to_pqr @ pqr
+
+        # M = dH_dt = J*pqr_dot + cross(pqr, J*pqr) 
+        pqr_dot = Jinv @ (M - np.cross(pqr, J @ pqr))
+
+        return np.concatenate([pned_dot, uvw_dot, rpy_dot, pqr_dot])
+
