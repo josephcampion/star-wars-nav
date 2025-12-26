@@ -61,18 +61,10 @@ def solve_f_equals_ma_explicit(x_vec, mass_props, F, M):
     rdot = gamma7 * p * q - gamma1 * q * r + gamma4 * l + gamma8 * n
 
     return np.array([
-        pn_dot,
-        pe_dot,
-        pd_dot,
-        udot,
-        vdot,
-        wdot,
-        roll_dot,
-        pitch_dot,
-        yaw_dot,
-        pdot,
-        qdot,
-        rdot,
+        pn_dot, pe_dot, pd_dot,
+        udot, vdot, wdot,
+        roll_dot, pitch_dot, yaw_dot,
+        pdot, qdot, rdot,
     ])
 
 def test_solve_f_equals_ma():
