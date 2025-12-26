@@ -1,27 +1,6 @@
 
 import numpy as np
 
-class GammaInertiaTerms():
-    def __init__(self, Jx, Jy, Jz, Jxz):
-
-        # TODO: Replace with cross product/matrix calc
-        # or do that with a unit test...
-        gamma = Jx * Jz - Jxz**2
-        gamma1 = Jxz * (Jx - Jy + Jz) / gamma
-        gamma2 = (Jz * (Jz - Jy) + Jxz**2) / gamma
-        gamma3 = Jz / gamma
-        gamma4 = Jxz / gamma
-        gamma5 = (Jz - Jx) / Jy
-        gamma6 = Jxz / Jy
-        gamma7 = ((Jx - Jy) * Jx + Jxz**2) / gamma
-        gamma8 = Jx / gamma
-        
-        self._Gamma = np.array([gamma, gamma1, gamma2, gamma3, \
-            gamma4, gamma5, gamma6, gamma7, gamma8])
-
-    def get_gamma_vec(self):
-        return self._Gamma
-
 # TODO: Do unit tests on this, and compare with simple rotation math.
 def get_X_and_Z_derivatives(alpha, \
     C_L_0, C_L_alpha, C_L_q, C_L_delta_e, \

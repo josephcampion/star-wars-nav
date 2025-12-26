@@ -1,41 +1,11 @@
 
 import numpy as np
 import models.aerosonde_uav as ac
-from models.utils import GammaInertiaTerms
+from models.utils import InertiaTerms
 
 # TODO: Make this a function of altitude.
 AIR_DENSITY_KGM3 = 1.2682 # [kg*m^3]
 
-class MassProperties:
-    def __init__(self, mass, inertia_list):
-
-        if len(inertia_list) == 6:
-            Jx = inertia_list[0]
-            Jy = inertia_list[1]
-            Jz = inertia_list[2]
-            Jxy = inertia_list[3]
-            Jxz = inertia_list[4]
-            Jyz = inertia_list[5]
-        elif len(inertia_list) == 4: # assuming Jxy and Jyz are 0
-            Jx = inertia_list[0]
-            Jy = inertia_list[1]
-            Jz = inertia_list[2]
-            Jxy = 0.0
-            Jxz = inertia_list[3]
-            Jyz = 0.0
-        else:
-            print("Inertia list needs to be of len 4 or 6.")
-
-        self._m = mass
-        self._Jx = Jx
-        self._Jy = Jy
-        self._Jz = Jz
-        self._Jxy = Jxy
-        self._Jxz = Jxz
-        self._Jyz = Jyz
-        self._Gamma = GammaInertiaTerms(Jx, Jy, Jz, Jxz)
-
-# end MassProperties
 
 class AerodynamicCoefficients:
     def __init__(self, aero_coeffs_list):

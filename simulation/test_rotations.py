@@ -86,7 +86,7 @@ def test_get_pqr_to_rpy_dot():
 
     A_rpy_dot_to_pqr = get_rpy_dot_pdr(roll, pitch)
 
-    # NOTE: In practice, numerical inv not recommended
+    # NOTE: In practice, numerical inv not recommended.
     # Solve A@x=b instead.
     A_pqr_to_rpy_dot_numerical = np.linalg.inv(A_rpy_dot_to_pqr)
 
