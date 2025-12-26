@@ -15,16 +15,16 @@ east0 = 0.  # initial east position
 down0 = -100.0  # initial down position
 
 u0 = 25.  # initial velocity along body x-axis
-v0 = 0.  # initial velocity along body y-axis
-w0 = 0.  # initial velocity along body z-axis
+v0 = 1.0  # initial velocity along body y-axis
+w0 = 0.0  # initial velocity along body z-axis
 
-phi0 = 0.  # initial roll angle
-theta0 = 0.  # initial pitch angle
-psi0 = 0.  # initial yaw angle
+phi0 = 0.0  # initial roll angle
+theta0 = np.deg2rad(0.0)  # initial pitch angle
+psi0 = -0.0  # initial yaw angle
 
-p0 = 0. # initial roll rate
-q0 = 0. # initial pitch rate
-r0 = 0. # initial yaw rate
+p0 = -0.0 # initial roll rate
+q0 = 0.0 # initial pitch rate
+r0 = -0.0 # initial yaw rate
 
 initial_condtions = np.array([
     north0,

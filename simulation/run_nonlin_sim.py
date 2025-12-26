@@ -35,17 +35,22 @@ Xdot = np.zeros(xdim)
 #   Input Forces & Moments (TODO: Control)
 ####################################################
 
-amp =  1.0 # [N] or [N*m]
+amp =  0.1 # [N] or [N*m]
 w_in = 1.0 # [rad/s]
 u_sin_wave = np.sin(w_in * time)
 
 U = np.zeros([nt, 6])
-U[:,0] = amp * u_sin_wave # Fx
-U[:,1] = amp * -u_sin_wave # Fy
-U[:,2] = amp * u_sin_wave # Fz
-U[:,3] = amp * -u_sin_wave # Mx
-U[:,4] = amp * u_sin_wave # My
-U[:,5] = amp * -u_sin_wave # Mz
+U[:,0] = 10.0 * amp * np.ones(nt) # Fx
+# U[:,1] = amp * np.ones(nt) # Fy
+# U[:,2] = amp * np.ones(nt) # Fz
+# U[:,3] = amp * np.ones(nt) # Mx
+# U[:,4] = amp * np.ones(nt) # My
+# U[:,5] = amp * np.ones(nt) # Mz
+# U[:,0] = amp * u_sin_wave # Fx
+# U[:,1] = amp * -u_sin_wave # Fy
+# U[:,2] = amp * u_sin_wave # Fz
+# U[:,4] = amp * u_sin_wave # My
+# U[:,5] = amp * u_sin_wave # Mz
 
 ####################################################
 #   Propagate Simulation (TODO: Put in separate file/dir)
