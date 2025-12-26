@@ -77,5 +77,5 @@ class NonlinearKinematicState(KinematicState):
     def __init__(self, init_conds=np.zeros(12)):
         super().__init__(init_conds=init_conds)
 
-    def step_nonlin_dynamics(self, F, M):
+    def solve_f_equals_ma(self, F, M):
         pass
