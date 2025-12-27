@@ -37,6 +37,3 @@ def get_gravity_force(m, roll, pitch):
 # given control inputs and ambient conditions.
 def get_all_forces_and_moments():
     pass
-
-def get_aero_forces_and_moments():
-    pass

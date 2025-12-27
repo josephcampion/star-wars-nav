@@ -2,6 +2,22 @@
 import numpy as np
 import models.aerosonde_uav as mav
 
+# TODO: Add steady winds and gusts.
+
+# def get_airspeed_vector(u, v, w, uw, vw, ww):
+#     return np.array([u - uw, v - vw, w - ww])
+
+def get_Va(u, v, w):
+    return np.sqrt(u**2 + v**2 + w**2)
+
+def get_alpha(u, v, w):
+    return np.arctan2(w, u)
+
+def get_beta(u, v, w):
+    Va = get_Va(u, v, w)
+    return np.arcsin(v / Va)
+
+
 class AerodynamicCoefficients:
     def __init__(self, aero_coeffs_list):
         if len(aero_coeffs_list) != 30:
@@ -208,6 +224,29 @@ class AerodynamicCoefficients:
         M_pitch = q_bar * S * c * (C_m_0 + C_m_alpha * alpha + C_m_q * c / (2 * Va) * q + C_m_delta_e * delta_e)
 
         return M_pitch
+
+    def get_aero_forces_and_moments(self, alpha, beta, Va, pqr, control, rho, S, c, b):
+
+        p, q, r = pqr
+
+        delta_e, _, delta_a, delta_r = control[0:4]
+
+        F_lift = self.get_lift_force(alpha, q, delta_e, rho, Va, S, c)
+        F_drag = self.get_drag_force(alpha, q, delta_e, rho, Va, S, c)
+
+        F_x = -F_drag * np.cos(alpha) + F_lift * np.sin(alpha)
+        F_z = -F_drag * np.sin(alpha) - F_lift * np.cos(alpha)
+
+        F_y = self.get_side_force(beta, p, r, delta_a, delta_r, rho, Va, S, b)
+
+        M_roll = self.get_roll_moment(beta, p, r, delta_a, delta_r, rho, Va, S, b)
+        M_yaw = self.get_yaw_moment(beta, p, r, delta_a, delta_r, rho, Va, S, b)
+        M_pitch = self.get_pitch_moment(alpha, q, delta_e, rho, Va, S, c)
+
+        F_aero = np.array([F_x, F_y, F_z])
+        M_aero = np.array([M_roll, M_yaw, M_pitch])
+
+        return F_aero, M_aero
 
 
 if __name__ == "__main__":

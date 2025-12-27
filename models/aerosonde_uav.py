@@ -23,7 +23,7 @@ c = 0.18994 # [m]
 #--------------------- Engine --------------------#
 # TODO: Figure out what all these are...
 S_prop = 0.2027 # [m^2]
-rho = 1.2682 # [kg*m^3] # TODO: Make this a function of altitude?
+rho = 1.2682 # [kg/m^3] # TODO: Make this a function of altitude?
 k_motor = 50.0 # [-]
 k_T_p = 0.1 # [-]
 k_Omega = 0.1 # [-]
