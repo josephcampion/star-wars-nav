@@ -140,6 +140,75 @@ class AerodynamicCoefficients:
 
         return F_drag
 
+    def get_side_force(self, beta, p, r, delta_a, delta_r, rho, Va, S, b):
+        C_Y_0 = self._C_Y_0
+        C_Y_beta = self._C_Y_beta
+        C_Y_p = self._C_Y_p
+        C_Y_r = self._C_Y_r
+        C_Y_delta_a = self._C_Y_delta_a
+        C_Y_delta_r = self._C_Y_delta_r
+
+        q_bar = 0.5 * rho * Va**2
+
+        k_omega = b / (2 * Va)
+
+        F_side = q_bar * S * (C_Y_0 + C_Y_beta * beta + C_Y_p * k_omega * p + C_Y_r * k_omega * r + C_Y_delta_a * delta_a + C_Y_delta_r * delta_r)
+
+        return F_side
+
+    def get_fx_and_fz(self, alpha, q, delta_e, rho, Va, S, c):
+        F_lift = self.get_lift_force(alpha, q, delta_e, rho, Va, S, c)
+        F_drag = self.get_drag_force(alpha, q, delta_e, rho, Va, S, c)
+
+        F_x = -F_drag * np.cos(alpha) + F_lift * np.sin(alpha)
+        F_z = -F_drag * np.sin(alpha) - F_lift * np.cos(alpha)
+
+        return F_x, F_z
+
+    def get_roll_moment(self, beta, p, r, delta_a, delta_r, rho, Va, S, b):
+        C_l_0 = self._C_l_0
+        C_l_beta = self._C_l_beta
+        C_l_p = self._C_l_p
+        C_l_r = self._C_l_r
+        C_l_delta_a = self._C_l_delta_a
+        C_l_delta_r = self._C_l_delta_r
+        
+        q_bar = 0.5 * rho * Va**2
+
+        k_w = b / (2 * Va)
+
+        M_roll = q_bar * S * b * (C_l_0 + C_l_beta * beta + C_l_p * k_w * p + C_l_r * k_w * r + C_l_delta_a * delta_a + C_l_delta_r * delta_r)
+
+        return M_roll
+    
+    def get_yaw_moment(self, beta, p, r, delta_a, delta_r, rho, Va, S, b):
+        C_n_0 = self._C_n_0
+        C_n_beta = self._C_n_beta
+        C_n_p = self._C_n_p
+        C_n_r = self._C_n_r
+        C_n_delta_a = self._C_n_delta_a
+        C_n_delta_r = self._C_n_delta_r
+        
+        q_bar = 0.5 * rho * Va**2
+
+        k_w = b / (2 * Va)
+
+        M_yaw = q_bar * S * b * (C_n_0 + C_n_beta * beta + C_n_p * k_w * p + C_n_r * k_w * r + C_n_delta_a * delta_a + C_n_delta_r * delta_r)
+
+        return M_yaw
+    
+    def get_pitch_moment(self, alpha, q, delta_e, rho, Va, S, c):
+        C_m_0 = self._C_m_0
+        C_m_alpha = self._C_m_alpha
+        C_m_q = self._C_m_q
+        C_m_delta_e = self._C_m_delta_e
+        
+        q_bar = 0.5 * rho * Va**2
+
+        M_pitch = q_bar * S * c * (C_m_0 + C_m_alpha * alpha + C_m_q * c / (2 * Va) * q + C_m_delta_e * delta_e)
+
+        return M_pitch
+
 
 if __name__ == "__main__":
 

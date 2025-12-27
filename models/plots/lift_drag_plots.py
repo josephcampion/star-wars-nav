@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import models.aerosonde_uav as mav
-from models.propulsion import EngineProperties
 from models.aerodynamics import AerodynamicCoefficients
 
 # TODO: Plot thrust vs. throttle and torque vs. throttle instead.
