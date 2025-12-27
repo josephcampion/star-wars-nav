@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import models.aerosonde_uav as mav
 from models.propulsion import EngineProperties
 
+# TODO: Plot thrust vs. throttle and torque vs. throttle instead.
+
 ####################################################
     #   Initialize Simulation Parameters
 ####################################################

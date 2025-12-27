@@ -111,6 +111,35 @@ class AerodynamicCoefficients:
             C_r_0, C_r_beta, C_r_p, C_r_r, C_r_delta_a, C_r_delta_r
         ])
 
+    def get_lift_force(self, alpha, q, delta_e, rho, Va, S, c):
+        C_L_0 = self._C_L_0
+        C_L_alpha = self._C_L_alpha
+        C_L_q = self._C_L_q
+        C_L_delta_e = self._C_L_delta_e
+
+        # TODO: Try out nonlinear version of this.
+        C_L_of_alpha = C_L_0 + C_L_alpha * alpha
+
+        q_bar = 0.5 * rho * Va**2
+
+        F_lift = q_bar * S * (C_L_of_alpha + C_L_q * c / (2 * Va) * q + C_L_delta_e * delta_e)
+
+        return F_lift
+
+    def get_drag_force(self, alpha, q, delta_e, rho, Va, S, c):
+        C_D_0 = self._C_D_0
+        C_D_alpha = self._C_D_alpha
+        C_D_q = self._C_D_q
+        C_D_delta_e = self._C_D_delta_e
+
+        C_D_of_alpha = C_D_0 + C_D_alpha * alpha
+
+        q_bar = 0.5 * rho * Va**2
+
+        F_drag = q_bar * S * (C_D_of_alpha + C_D_q * c / (2 * Va) * q + C_D_delta_e * delta_e)
+
+        return F_drag
+
 
 if __name__ == "__main__":
 
