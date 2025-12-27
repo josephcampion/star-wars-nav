@@ -25,8 +25,10 @@ def test_get_gravity_force():
 
     mass = 10.0
 
-    roll = np.deg2rad(5.0)
-    pitch = np.deg2rad(10.0)
+    # roll = np.deg2rad(5.0)
+    # pitch = np.deg2rad(10.0)
+    roll = np.random.uniform(low=-np.pi, high=np.pi)
+    pitch = np.random.uniform(low=-np.pi/2.0, high=np.pi/2.0)
 
     F_grav_explicit = get_gravity_force_explicit(mass, roll, pitch)
     F_grav_implicit = get_gravity_force(mass, roll, pitch)

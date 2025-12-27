@@ -1,5 +1,6 @@
 
 import numpy as np
+import models.aerosonde_uav as mav
 
 class AerodynamicCoefficients:
     def __init__(self, aero_coeffs_list):
@@ -39,7 +40,6 @@ class AerodynamicCoefficients:
         self._C_l_delta_r = aero_coeffs_list[28]
         self._C_n_delta_r = aero_coeffs_list[29]
 
-    # TODO: Do unit tests on this, and compare with simple rotation math.
     def get_x_and_z_coefficients(self, alpha):
         
         C_L_0 = self._C_L_0
@@ -53,8 +53,10 @@ class AerodynamicCoefficients:
 
         # TODO: Try out nonlinear version of this.
         C_L_of_alpha = C_L_0 + C_L_alpha * alpha
-        C_D_of_alpha = C_D_0 + C_D_alpha * alpha 
+        C_D_of_alpha = C_D_0 + C_D_alpha * alpha
 
+        # Could rotate this after producing forces,
+        # but might need these again for state space models.
         C_X_of_alpha = -C_D_of_alpha * np.cos(alpha) + C_L_of_alpha * np.sin(alpha)
         C_X_q_of_alpha = -C_D_q * np.cos(alpha) + C_L_q * np.sin(alpha)
         C_X_delta_e_of_alpha = -C_D_delta_e * np.cos(alpha) + \
@@ -74,7 +76,7 @@ class AerodynamicCoefficients:
             C_Z_delta_e_of_alpha,
         ])
     
-    # TODO: Do unit tests on this, and compare with rotation math.
+    # TODO: Do unit tests on this (e.g., compare l and n with pdot and rdot).
     def get_p_and_r_derivatives(self,gamma3, gamma4, gamma8):
 
         C_l_0 = self._C_l_0
@@ -112,7 +114,18 @@ class AerodynamicCoefficients:
 
 if __name__ == "__main__":
 
-
+    aero_coeffs = AerodynamicCoefficients([
+        mav.C_L_0, mav.C_D_0, mav.C_m_0, \
+        mav.C_L_alpha, mav.C_D_alpha, mav.C_m_alpha, \
+        mav.C_L_q, mav.C_D_q, mav.C_m_q, \
+        mav.C_L_delta_e, mav.C_D_delta_e, mav.C_m_delta_e, \
+        mav.C_Y_0, mav.C_l_0, mav.C_n_0, \
+        mav.C_Y_beta, mav.C_l_beta, mav.C_n_beta, \
+        mav.C_Y_p, mav.C_l_p, mav.C_n_p, \
+        mav.C_Y_r, mav.C_l_r, mav.C_n_r, \
+        mav.C_Y_delta_a, mav.C_l_delta_a, mav.C_n_delta_a, \
+        mav.C_Y_delta_r, mav.C_l_delta_r, mav.C_n_delta_r \
+    ])
 
     (C_X_of_alpha, C_X_q_of_alpha, C_X_delta_e_of_alpha, \
         C_Z_of_alpha, C_Z_q_of_alpha, C_Z_delta_e_of_alpha) \

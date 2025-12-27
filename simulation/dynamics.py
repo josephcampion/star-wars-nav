@@ -40,6 +40,3 @@ def get_all_forces_and_moments():
 
 def get_aero_forces_and_moments():
     pass
-
-def get_propulsion_forces():
-    pass
