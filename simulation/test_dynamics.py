@@ -15,10 +15,13 @@ def get_gravity_force_explicit(m, roll, pitch):
     cp = np.cos(pitch)
     sp = np.sin(pitch)
 
-    return np.array([-m * g * sp, m * g * cp * sr, m * g * cp * cr])
+    return np.array([
+        -m * g * sp,
+        m * g * cp * sr,
+        m * g * cp * cr
+    ])
 
-
-def test_solve_f_equals_ma():
+def test_get_gravity_force():
 
     mass = 10.0
 
@@ -34,5 +37,4 @@ def test_solve_f_equals_ma():
     assert F_grav_implicit[0] == approx(F_grav_explicit[0], abs=1.0e-6)
     assert F_grav_implicit[1] == approx(F_grav_explicit[1], abs=1.0e-6)
     assert F_grav_implicit[2] == approx(F_grav_explicit[2], abs=1.0e-6)
-
 
