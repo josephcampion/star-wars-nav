@@ -55,6 +55,8 @@ class KinematicState:
 # TODO: Make state derivatives given forces & moments
 ####################################################
 
+# TODO: Move this to 'models' or 'flight_controls'?
+# And only have it be used for control design.
 class LinearKinematicState(KinematicState):
     def __init__(self, init_conds=np.zeros(12)):
         super().__init__(init_conds=init_conds)
@@ -75,10 +77,22 @@ class LinearKinematicState(KinematicState):
             self._r,
         ])
 
+# TODO: Move to 'simulation.utils.py'?
+def get_course(v_ned):
+    return np.arctan2(v_ned[1], v_ned[0])
+
+def get_vfpa(v_ned):
+    Vg = np.sqrt(v_ned[0]**2 + v_ned[1]**2)
+    return np.arctan2(-v_ned[2], Vg)
+
 class NonlinearKinematicState(KinematicState):
     def __init__(self, init_conds=np.zeros(12)):
         super().__init__(init_conds=init_conds)
 
+    # # TODO: Derive quantities based off base state values (e.g., course, groundspeed, etc.)
+    # def get_derived_states(self, w_ned):
+    #     self._chi = get_course(v_ned)
+    #     self._course = np.
     # For these simulations, assuming NED is inertial frame.
     def solve_f_equals_ma(self, mass_props, F, M):
 
@@ -107,3 +121,28 @@ class NonlinearKinematicState(KinematicState):
 
         return np.concatenate([pned_dot, uvw_dot, rpy_dot, pqr_dot])
 
+"""
+TODO: Implement AirDataState independent (but related) to Kinematic State.
+Should contain pressure, temperature, air density, winds, etc. that are
+independent from kinematics of vehicle moving with respect to inertial frame.
+
+class AirDataState:
+    def __init__.(self, uvw, h, w_ned, DCM_bod2ned):
+        # Assume 1976 atmosphere model (without hot-day correction) to start.
+        # TODO: Get air density, static pressure, and
+        # temperature using 1976 atmosphere model.
+        # [ur, vr, wr]_bod = [u, v, w]_bod + DCM_bod2ned.T @ [wu, we, wd]_ned
+        ur, vr, wr = uvw - DCM_bod2ned.T @ w_ned
+        self._Va = aero.get_Va(ur, vr, wr)
+        self._alpha = aero.get_alpha(ur, vr, wr)
+        self._beta = aero.get_beta(ur, vr, wr)
+        self._Ps = h_to_Ps_1976_map(h)
+        self._Ts = h_to_Ts_1976_map(h)
+        # TODO: Insert hot-day correction on temperature then use ideal
+        # gas lawfor density (assuming pressure remains the same).
+        self._rho = h_to_Ps_1976_map(h)
+        self._sos = 
+        self._mach = 
+        self._Veas = 
+        self._Pt = 
+"""

@@ -48,7 +48,7 @@ def get_forces_and_moments(vehicle, state, control):
     rpy = state[6:9]
     pqr = state[9:12]
 
-    # TODO: Calculate alpha, beta, Va (ignoring wind for now).
+    # TODO: Calculate this as part of method in 'state' class.
     Va = aero.get_Va(u, v, w)
     alpha = aero.get_alpha(u, v, w)
     beta = aero.get_beta(u, v, w)
