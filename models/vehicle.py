@@ -17,6 +17,12 @@ class Vehicle:
         self._c = c
         self._b = b
         self._rho = rho
+    
+    def get_aero_forces_and_moments(self, alpha, beta, Va, pqr, control, rho, S, c, b):
+        return self._aero_coeffs.get_aero_forces_and_moments(alpha, beta, Va, pqr, control, rho, S, c, b)
+
+    def get_prop_force_and_moment(self, Va, delta_t):
+        return self._engine_props.get_prop_force_and_moment(Va, delta_t)
 
 # TODO: Move examples like this to test_vehicle.py or test_dynamics.py
 if __name__ == "__main__":

@@ -58,12 +58,11 @@ def get_forces_and_moments(vehicle, state, control):
 
     delta_t = control[1]
 
-    F_aero, M_aero = vehicle._aero_coeffs.get_aero_forces_and_moments(alpha, beta, Va, pqr, control, rho, S, c, b)
-    F_prop, M_prop = vehicle._engine_props.get_prop_force_and_moment(Va, delta_t)
+    F_aero, M_aero = vehicle.get_aero_forces_and_moments(alpha, beta, Va, pqr, control, rho, S, c, b)
+    F_prop, M_prop = vehicle.get_prop_force_and_moment(Va, delta_t)
     F_grav = get_gravity_force(m, rpy[0], rpy[1])
 
     return F_aero + F_prop + F_grav, M_aero + M_prop
-
 
 # TODO: Move examples like this to test_vehicle.py or test_dynamics.py
 if __name__ == "__main__":
