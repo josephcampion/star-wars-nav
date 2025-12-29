@@ -22,7 +22,7 @@ nt = len(time)
 
 mass_props = MassProperties(mav.m, mav.Jx, mav.Jy, mav.Jz, mav.Jxz)
 
-# Initialize vectors
+# Initialize vectors 
 ac_state = NonlinearKinematicState(init_conds=ic)
 
 xdim = [nt, len(ac_state.get_state())]
@@ -58,6 +58,8 @@ u_sin_wave = amp * np.sin(w_in * time)
 ####################################################
 #   Propagate Simulation (TODO: Put in separate file/dir)
 ####################################################
+
+# TODO: Get steady wind and gusts from external file.
 
 for i in range(nt): 
 

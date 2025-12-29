@@ -17,7 +17,6 @@ def get_beta(u, v, w):
     Va = get_Va(u, v, w)
     return np.arcsin(v / Va)
 
-
 class AerodynamicCoefficients:
     def __init__(self, aero_coeffs_list):
         if len(aero_coeffs_list) != 30:
