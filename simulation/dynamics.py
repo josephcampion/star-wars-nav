@@ -52,11 +52,19 @@ def get_forces_and_moments(vehicle, state, control):
     Va = aero.get_Va(u, v, w)
     alpha = aero.get_alpha(u, v, w)
     beta = aero.get_beta(u, v, w)
+    # print("alpha = ", alpha)
+    # print("beta = ", beta)
+    # print("Va = ", Va)
 
     delta_t = control[1]
 
     F_aero, M_aero = vehicle.get_aero_forces_and_moments(alpha, beta, Va, pqr, control, rho, S, c, b)
     F_prop, M_prop = vehicle.get_prop_force_and_moment(Va, delta_t)
     F_grav = get_gravity_force(m, rpy[0], rpy[1])
+    # print("F_grav = ", F_grav)
+    # print("F_aero = ", F_aero)
+    # print("F_prop = ", F_prop)
+    # print("M_aero = ", M_aero)
+    # print("M_prop = ", M_prop)
 
     return F_aero + F_prop + F_grav, M_aero + M_prop

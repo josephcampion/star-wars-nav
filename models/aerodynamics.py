@@ -207,9 +207,20 @@ class AerodynamicCoefficients:
         q_bar = 0.5 * rho * Va**2
 
         k_w = b / (2 * Va)
-
+        # print("C_n_0 = ", C_n_0)
+        # print("C_n_beta = ", C_n_beta)
+        # print("C_n_p = ", C_n_p)
+        # print("C_n_r = ", C_n_r)
+        # print("C_n_delta_a = ", C_n_delta_a)
+        # print("C_n_delta_r = ", C_n_delta_r)
+        # print("q_bar = ", q_bar)
+        # print("k_w = ", k_w)
+        # print("p = ", p)
+        # print("r = ", r)
+        # print("delta_a = ", delta_a)
+        # print("delta_r = ", delta_r)
         M_yaw = q_bar * S * b * (C_n_0 + C_n_beta * beta + C_n_p * k_w * p + C_n_r * k_w * r + C_n_delta_a * delta_a + C_n_delta_r * delta_r)
-
+        # print("M_yaw = ", M_yaw)
         return M_yaw
     
     def get_pitch_moment(self, alpha, q, delta_e, rho, Va, S, c):
@@ -243,7 +254,7 @@ class AerodynamicCoefficients:
         M_pitch = self.get_pitch_moment(alpha, q, delta_e, rho, Va, S, c)
 
         F_aero = np.array([F_x, F_y, F_z])
-        M_aero = np.array([M_roll, M_yaw, M_pitch])
+        M_aero = np.array([M_roll, M_pitch, M_yaw])
 
         return F_aero, M_aero
 
