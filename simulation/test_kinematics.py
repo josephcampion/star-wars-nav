@@ -5,6 +5,172 @@ from pytest import approx
 import models.mass_props as mp
 import simulation.kinematics as kin
 
+def test_get_course():
+
+    # Due North (Course = 0.0)
+    vN, vE = 100.0, 0.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(0.0), abs=1.0e-6)
+
+    # Due East (Course = 90.0)
+    vN, vE = 0.0, 50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(90.0), abs=1.0e-6)
+
+    # Due South (Course = 180.0)
+    vN, vE = -100.0, 0.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(180.0), abs=1.0e-6)
+
+    # Due West (Course = 270.0)
+    vN, vE = 0.0, -50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(270.0), abs=1.0e-6)
+
+    # North-East (Course = 45.0)
+    vN, vE = 50.0, 50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(45.0), abs=1.0e-6)
+
+    # South-East (Course = 135.0)
+    vN, vE = -50.0, 50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(135.0), abs=1.0e-6)
+
+    # South-West (Course = 225.0)
+    vN, vE = -50.0, -50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(225.0), abs=1.0e-6)
+
+    # North-West (Course = 315.0)
+    vN, vE = 50.0, -50.0
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(315.0), abs=1.0e-6)
+
+    Va = 100.0
+
+    # NNW (Course = 337.5)
+    chi = np.radians(337.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(337.5), abs=1.0e-6)
+
+    # NNE (Course = 22.5)
+    chi = np.radians(22.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(22.5), abs=1.0e-6)
+
+    # SSW (Course = 202.5)
+    chi = np.radians(202.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(202.5), abs=1.0e-6)
+
+    # SSE (Course = 157.5)
+    chi = np.radians(157.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(157.5), abs=1.0e-6)
+
+    # WNW (Course = 307.5)
+    chi = np.radians(307.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(307.5), abs=1.0e-6)
+
+    # ENE (Course = 67.5)
+    chi = np.radians(67.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(67.5), abs=1.0e-6)
+
+    # WSW (Course = 247.5)
+    chi = np.radians(247.5)
+    vN = Va * np.cos(chi)
+    vE = Va * np.sin(chi)
+    v_ned = np.array([vN, vE, 0.0])
+    chi = kin.get_course(v_ned)
+    assert chi == approx(np.deg2rad(247.5), abs=1.0e-6)
+
+    # Make sure it returns NaN for zero velocity
+    v_ned = np.array([0.0, 0.0, 0.0])
+    chi = kin.get_course(v_ned)
+    assert np.isnan(chi)
+
+    v_ned = np.array([0.0, 0.0, 100.0])
+    chi = kin.get_course(v_ned)
+    assert np.isnan(chi)
+
+def test_get_vfpa():
+
+    # Straight up (VFPA = 90.0)
+    vN, vE, vD = 0.0, 0.0, -100.0 # positive z-axis is down
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert vfpa == approx(np.deg2rad(90.0), abs=1.0e-6)
+
+    # Straight down (VFPA = -90.0)
+    vN, vE, vD = 0.0, 0.0, 100.0 # positive z-axis is down
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(-90.0), 1.0e-6)
+
+    # Straight forward (VFPA = 0.0)
+    vN, vE, vD = 100.0, 0.0, 0.0
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(0.0), 1.0e-6)
+
+    # Straight forward (VFPA = 0.0)
+    vN, vE, vD = 50.0, -50.0, -0.0
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(0.0), 1.0e-6)
+
+    # Medium climb (VFPA = 45.0)
+    vN, vE, vD = 50.0, 0.0, -50.0
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(45.0), 1.0e-6)
+
+    # Shallow dive (VFPA = -30.0)
+    vN, vE, vD = 0.0, 100.0*np.sqrt(3.0) / 2.0, 50.0
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(-30.0), 1.0e-6)
+
+    # Steep dive (VFPA = -60.0)
+    vN, vE, vD = 50.0, 0.0, 100.0*np.sqrt(3.0) / 2.0
+    v_ned = np.array([vN, vE, vD])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isclose(vfpa, np.deg2rad(-60.0), 1.0e-6)
+
+    # Make sure it returns NaN for zero velocity
+    v_ned = np.array([0.0, 0.0, 0.0])
+    vfpa = kin.get_vfpa(v_ned)
+    assert np.isnan(vfpa)
+
 # M = dH_dt = J*pqr_dot + cross(pqr, J*pqr) 
 def solve_f_equals_ma_explicit(x_vec, mass_props, F, M):
 

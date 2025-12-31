@@ -79,11 +79,20 @@ class LinearKinematicState(KinematicState):
 
 # TODO: Move to 'simulation.utils.py'?
 def get_course(v_ned):
-    return np.arctan2(v_ned[1], v_ned[0])
+    v_n, v_e, _ = v_ned
+    if np.hypot(v_n, v_e) < 1.0e-6:
+        return np.nan
+    chi = np.arctan2(v_e, v_n)
+    if chi < 0:
+        chi += 2*np.pi
+    return chi
 
 def get_vfpa(v_ned):
-    Vg = np.sqrt(v_ned[0]**2 + v_ned[1]**2)
-    return np.arctan2(-v_ned[2], Vg)
+    v_n, v_e, v_d = v_ned
+    Vg = np.hypot(v_n, v_e)
+    if np.hypot(Vg, v_d) < 1.0e-6:
+        return np.nan
+    return np.arctan2(-v_d, Vg)
 
 class NonlinearKinematicState(KinematicState):
     def __init__(self, init_conds=np.zeros(12)):
