@@ -1,7 +1,7 @@
 
 import numpy as np
 
-class SimLogger:
+class SimulationLogger:
     def __init__(self, t, x0):
         nt =  np.len(t)
         lx = np.len(x0)
@@ -15,14 +15,13 @@ class SimLogger:
         self._x_t[i] = x
         self._xdot_t[i] = xdot
 
-class Simulation:
-    def __init__(self,dt, T, x0, dyn_fcn, t0=0.0):
-        self._dt = dt
-        self._T = T
-        self._t = np.arange(t0, T, dt)
-        self._x0 = x0
-        self._dyn_fcn = dyn_fcn
+    # TODO: Log AirDataState (when implemented)
 
-    def run(self, ctrl_in_t):
-        pass
+    # TODO: Log ControlInputs
+
+    # TODO: Log ForcesAndMoments
+
+    # TODO: Log VehicleState
+
+    # TODO: Log VehicleStateDot
 

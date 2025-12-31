@@ -8,7 +8,7 @@ from models.mass_props import MassProperties as mass
 from models.parameters import initial_condtions as ic
 from models.vehicle import Vehicle
 from simulation.kinematics import NonlinearKinematicState 
-from plotter import Plotter
+from simulation.plotter import Plotter
 from simulation import dynamics as dyn
 
 ####################################################
@@ -66,19 +66,19 @@ Xdot = np.zeros(xdim)
 
 # TODO: Add trim inputs to this (for elevator and throttle).
 
-amp =  0.5 # [N] or [N*m]
+# amp =  0.1 # [N] or [N*m]
 U_control = np.zeros([nt, 4])
 
 # Step Inputs
-U_control[:,0] = amp * np.ones(nt) # delta_e
-U_control[:,1] = 1.0 * amp * np.ones(nt) # delta_t
+# U_control[:,0] = -0.1 * np.ones(nt) # delta_e
+U_control[:,1] = 0.5 * np.ones(nt) # delta_t
 # U_control[:,2] = amp * np.ones(nt) # delta_a
 # U_control[:,3] = amp * np.ones(nt) # delta_r
 
 # Sine Inputs
-# w_in = 1.0 # [rad/s]
-# u_sin_wave = amp * np.sin(w_in * time)
-# U_control[:,0] = amp * u_sin_wave # delta_e
+w_in = 1.0 # [rad/s]
+u_sin_wave = 0.1 * np.sin(w_in * time)
+U_control[:,0] = u_sin_wave # delta_e
 # U_control[:,1] = amp * -u_sin_wave # delta_t
 # U_control[:,2] = amp * u_sin_wave # delta_a
 # U_control[:,3] = amp * u_sin_wave # delta_r
