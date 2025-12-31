@@ -41,7 +41,7 @@ vehicle = Vehicle(aero_coeffs, engine_props, mass_props, mav.S, mav.c, mav.b, ma
 ####################################################
 
 # Initialize sim parameters
-Tsim = 10.0 # seconds
+Tsim = 30.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
 
@@ -70,15 +70,15 @@ Xdot = np.zeros(xdim)
 U_control = np.zeros([nt, 4])
 
 # Step Inputs
-# U_control[:,0] = -0.1 * np.ones(nt) # delta_e
-U_control[:,1] = 0.5 * np.ones(nt) # delta_t
+U_control[:,0] = np.deg2rad(-4.0) * np.ones(nt) # delta_e
+U_control[:,1] = 0.4 * np.ones(nt) # delta_t
 # U_control[:,2] = amp * np.ones(nt) # delta_a
 # U_control[:,3] = amp * np.ones(nt) # delta_r
 
 # Sine Inputs
 w_in = 1.0 # [rad/s]
-u_sin_wave = 0.1 * np.sin(w_in * time)
-U_control[:,0] = u_sin_wave # delta_e
+# u_sin_wave = 0.1 * np.sin(w_in * time)
+# U_control[:,0] = u_sin_wave # delta_e
 # U_control[:,1] = amp * -u_sin_wave # delta_t
 # U_control[:,2] = amp * u_sin_wave # delta_a
 # U_control[:,3] = amp * u_sin_wave # delta_r
