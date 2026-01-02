@@ -2,7 +2,7 @@
 import numpy as np
 
 class SimulationLogger:
-    def __init__(self, t, x0):
+    def __init__(self, t, x0, u0):
         nt =  np.len(t)
         lx = np.len(x0)
         self._nt = np.len(t)
