@@ -13,7 +13,9 @@ from models.sensors import Accelerometer, Gyroscope
 # f(x,u)
 # x = [phi, theta]^T
 # u = [Va, p, q, r]^T
-def get_x_dot(p, q, r, phi, theta):
+def get_x_dot(x, u):
+    phi, theta = x
+    _, p, q, r = u
     sp = np.sin(phi)
     cp = np.cos(phi)
     tt = np.tan(theta)
@@ -62,7 +64,7 @@ def get_y_accel_meas(x, xdot): # noise is coming from sensor models
 def get_J_df_dx(x, u):
 
     phi, theta = x
-    p, q, r = u
+    _, p, q, r = u
 
     cp = np.cos(phi)
     sp = np.sin(phi)
@@ -107,11 +109,18 @@ def get_J_dh_dx(x, u):
                 #   EKF Algo
 ####################################################
 
+def wrap_phi_and_theta(x):
+    phi, theta = x
+    phi = np.mod(phi + np.pi, np.pi / 2.0) - np.pi / 4.0
+    theta = np.mod(theta + np.pi, np.pi) - np.pi / 2.0
+    return np.array([phi, theta])
+
 def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
 
     # Predict step
     dt_step = T_out / N
     x_hat_pred = x_hat + dt_step * get_x_dot(x_hat, u)
+    x_hat_pred = wrap_phi_and_theta(x_hat_pred)
     A = get_J_df_dx(x_hat, u)
     P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
 
@@ -122,6 +131,8 @@ def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
     x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
     P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
 
+    x_hat_upd = wrap_phi_and_theta(x_hat_upd)
+
     return x_hat_upd, P_upd
 
 
@@ -129,7 +140,7 @@ def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
     #   Initialize Simulation Parameters
 ####################################################
 
-Tsim = 10.0 # seconds
+Tsim = 30.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
 
@@ -143,9 +154,9 @@ u_truth = u0 * np.ones(nt) + 3.0 / Tsim * np.linspace(t0,Tsim,nt)
 v_truth = np.zeros(nt)
 w_truth = w0 * np.ones(nt) - 1.0 / Tsim * np.linspace(t0,Tsim,nt)
 
-p_truth = np.deg2rad(1.0) * np.sin(3*time)
-q_truth = -np.deg2rad(2.0) * np.sin(2*time)
-r_truth = np.deg2rad(3.0) * np.sin(1*time)
+p_truth = np.deg2rad(1.0) * np.sin(0.5*time)
+q_truth = -np.deg2rad(2.0) * np.sin(0.25*time)
+r_truth = np.deg2rad(3.0) * np.sin(0.1*time)
 # r_truth = 3.0 * np.sin(1*time)
 
 phi0 = np.deg2rad(-3.0)
@@ -163,15 +174,15 @@ theta_dot_truth = np.zeros(nt)
 ####################################################
 
 # Make accelerometer sensor models
-accel_bias = 1.e-2
-accel_noise = 1.e-2
+accel_bias = 0.0 # 1.e-3
+accel_noise = 0.0 # 1.e-3
 x_accel = Accelerometer(accel_bias, accel_noise)
 y_accel = Accelerometer(accel_bias, accel_noise)
 z_accel = Accelerometer(accel_bias, accel_noise)
 
 # Make gyroscope sensor models
-gyro_bias = 1.e-3
-gyro_noise = 1.e-3
+gyro_bias = 0.0 # 1.e-3
+gyro_noise = 0.0 # 1.e-3
 x_gyro = Gyroscope(gyro_bias, gyro_noise)
 y_gyro = Gyroscope(gyro_bias, gyro_noise)
 z_gyro = Gyroscope(gyro_bias, gyro_noise)
@@ -194,8 +205,8 @@ z_gyro_meas = np.zeros(nt)
 
 x_hat = np.array([phi0, theta0])
 P_hat = np.eye(2)
-Q = np.eye(2) * 1.e-6
-R = np.eye(3) * 1.e-2
+Q = np.eye(2) * 1.e-4
+R = np.eye(3) * 1.e-4
 
 x_hat_log = np.zeros((nt, 2))
 P_log = np.zeros((nt, 2, 2))
@@ -210,7 +221,9 @@ for i in range(nt):
     u, v, w = u_truth[i], v_truth[i], w_truth[i]
     p, q, r = p_truth[i], q_truth[i], r_truth[i]
 
-    phi_dot, theta_dot = get_x_dot(p, q, r, phi, theta)
+    x_truth = np.array([phi, theta])
+    Va = np.sqrt(u**2 + v**2 + w**2)
+    phi_dot, theta_dot = get_x_dot(x_truth, np.array([Va, p, q, r]))
 
     phi_dot_truth[i] = phi_dot
     theta_dot_truth[i] = theta_dot
@@ -239,14 +252,12 @@ for i in range(nt):
     # TODO: Use airspeed sensor model to get Va (and insert wind!).
     Va = np.sqrt(u**2 + v**2 + w**2)
 
-    """
     # Run EKF step
     y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    x_hat, P_hat = ekf_step(x_hat, P_hat, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    x_hat, P_hat = ekf_step(x_hat, P_hat, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt, N=10)
 
     x_hat_log[i] = x_hat
     P_log[i] = P_hat
-    """
 
     if i < (nt-1): # propagate truth motion
         phi_truth[i+1] = phi_truth[i] + phi_dot * dt
@@ -346,10 +357,11 @@ plt.suptitle('Attitude EKF Test')
 _, axs = plt.subplots(2,2)
 
 axs[0,0].plot(time, phi_truth, label='Truth')
+axs[0,0].plot(time, x_hat_log[:,0], label='Estimation', linestyle=':')
 axs[0,0].grid(True)
 # axs[0,0].set_xlabel('Time [s]')
 axs[0,0].set_ylabel('[rad/s]')
-axs[0,0].set_title(r'$\phi$')
+axs[0,0].set_title(r'$\phi$ vs. $\hat{\phi}$')
 axs[0,0].legend()
 
 axs[1,0].plot(time, phi_dot_truth, label='Truth')
@@ -360,10 +372,11 @@ axs[1,0].set_title(r'$\dot{\phi}$')
 axs[1,0].legend()
 
 axs[0,1].plot(time, theta_truth, label='Truth')
+axs[0,1].plot(time, x_hat_log[:,1], label='Estimation', linestyle=':')
 axs[0,1].grid(True)
 # axs[0,1].set_xlabel('Time [s]')
 axs[0,1].set_ylabel('[rad/s]')
-axs[0,1].set_title(r'$\theta$')
+axs[0,1].set_title(r'$\theta$ vs. $\hat{\theta}$')
 axs[0,1].legend()
 
 axs[1,1].plot(time, theta_dot_truth, label='Truth')
