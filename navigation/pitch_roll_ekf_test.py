@@ -176,6 +176,10 @@ x_gyro = Gyroscope(gyro_bias, gyro_noise)
 y_gyro = Gyroscope(gyro_bias, gyro_noise)
 z_gyro = Gyroscope(gyro_bias, gyro_noise)
 
+y_accel_x_truth = np.zeros(nt)
+y_accel_y_truth = np.zeros(nt)
+y_accel_z_truth = np.zeros(nt)
+
 y_accel_x_meas = np.zeros(nt)
 y_accel_y_meas = np.zeros(nt)
 y_accel_z_meas = np.zeros(nt)
@@ -224,9 +228,13 @@ for i in range(nt):
     x_dot_accel_in = np.zeros(3) # np.array([r])
     y_accel_meas = get_y_accel_meas(x_accel_in, x_dot_accel_in)
 
-    y_accel_x_meas[i] = x_accel.get_sensor_data(y_accel_meas[0])
-    y_accel_y_meas[i] = y_accel.get_sensor_data(y_accel_meas[1])
-    y_accel_z_meas[i] = z_accel.get_sensor_data(y_accel_meas[2])
+    y_accel_x_truth[i] = y_accel_meas[0]
+    y_accel_y_truth[i] = y_accel_meas[1]
+    y_accel_z_truth[i] = y_accel_meas[2]
+
+    y_accel_x_meas[i] = x_accel.get_sensor_data(y_accel_x_truth[i])
+    y_accel_y_meas[i] = y_accel.get_sensor_data(y_accel_y_truth[i])
+    y_accel_z_meas[i] = z_accel.get_sensor_data(y_accel_z_truth[i])
 
     # TODO: Use airspeed sensor model to get Va (and insert wind!).
     Va = np.sqrt(u**2 + v**2 + w**2)
@@ -296,6 +304,38 @@ axs[2,1].set_ylabel('[rad/s]')
 axs[2,1].set_title(r'$r$ vs. $r_{meas}$')
 axs[2,1].legend()
 
+plt.suptitle('Sensed Acceleration vs. Measured Acceleration')
+
+####################################################
+    #   Plot Acceleration
+####################################################
+
+_, axs = plt.subplots(3,1)
+
+axs[0].plot(time, y_accel_x_truth, label='Truth')
+axs[0].plot(time, y_accel_x_meas, label='Sensor', linestyle=':')
+axs[0].grid(True)
+# axs[0].set_xlabel('Time [s]')
+axs[0].set_ylabel('[m/s^2]')
+axs[0].set_title(r'$y_{accel,x}$ vs. $y_{accel,x,meas}$')
+axs[0].legend()
+
+axs[1].plot(time, y_accel_y_truth, label='Truth')
+axs[1].plot(time, y_accel_y_meas, label='Sensor', linestyle=':')
+axs[1].grid(True)
+# axs[1].set_xlabel('Time [s]')
+axs[1].set_ylabel('[m/s^2]')
+axs[1].set_title(r'$y_{accel,y}$ vs. $y_{accel,y,meas}$')
+axs[1].legend()
+
+axs[2].plot(time, y_accel_z_truth, label='Truth')
+axs[2].plot(time, y_accel_z_meas, label='Sensor', linestyle=':')
+axs[2].grid(True)
+axs[2].set_xlabel('Time [s]')
+axs[2].set_ylabel('[m/s^2]')
+axs[2].set_title(r'$y_{accel,z}$ vs. $y_{accel,z,meas}$')
+axs[2].legend()
+
 plt.suptitle('Attitude EKF Test')
 
 
@@ -307,7 +347,7 @@ _, axs = plt.subplots(2,2)
 
 axs[0,0].plot(time, phi_truth, label='Truth')
 axs[0,0].grid(True)
-axs[0,0].set_xlabel('Time [s]')
+# axs[0,0].set_xlabel('Time [s]')
 axs[0,0].set_ylabel('[rad/s]')
 axs[0,0].set_title(r'$\phi$')
 axs[0,0].legend()
@@ -321,7 +361,7 @@ axs[1,0].legend()
 
 axs[0,1].plot(time, theta_truth, label='Truth')
 axs[0,1].grid(True)
-axs[0,1].set_xlabel('Time [s]')
+# axs[0,1].set_xlabel('Time [s]')
 axs[0,1].set_ylabel('[rad/s]')
 axs[0,1].set_title(r'$\theta$')
 axs[0,1].legend()
