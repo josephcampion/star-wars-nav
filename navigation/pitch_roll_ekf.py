@@ -126,23 +126,30 @@ def wrap_phi_and_theta(x):
     theta = np.mod(theta + np.pi, np.pi) - np.pi / 2.0
     return np.array([phi, theta])
 
-def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
-
-    # Predict step
+def ekf_predict(x_hat, P_hat, Q, u, T_out, N=1):
     dt_step = T_out / N
     x_hat_pred = x_hat + dt_step * get_x_dot(x_hat, u)
     x_hat_pred = wrap_phi_and_theta(x_hat_pred)
     A = get_J_df_dx(x_hat, u)
     P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
 
-    # Update step
+    return x_hat_pred, P_pred
+
+def ekf_update(x_hat_pred, P_pred, R, u, y_meas):
     C = get_J_dh_dx(x_hat_pred, u)
     L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
     y_est = get_y_accel_est(x_hat_pred, u)
     x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
     P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
-
     x_hat_upd = wrap_phi_and_theta(x_hat_upd)
+
+    return x_hat_upd, P_upd
+
+def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
+
+    x_hat_pred, P_pred = ekf_predict(x_hat, P_hat, Q, u, T_out, N)
+    
+    x_hat_upd, P_upd = ekf_update(x_hat_pred, P_pred, R, u, y_meas)
 
     return x_hat_upd, P_upd
 
