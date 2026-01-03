@@ -8,7 +8,7 @@ def test_get_y_accel_meas():
     # x = [u, v, w, phi, theta, p, q, r]
     # xdot = [udot, vdot, wdot]
 
-    # No motion, no pitch or roll.
+    #--------------- No motion, no pitch or roll. ---------------#
     x = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     xdot = np.array([0.0, 0.0, 0.0])
 
@@ -16,7 +16,142 @@ def test_get_y_accel_meas():
 
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
-    assert np.isclose(y_accel_meas[2], -ekf.GRAVITY_ACCEL, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -ekf.GRAV_ACCEL_MPS2, 1.0e-6)
+
+    #--------------- No motion, pitched nose up. ---------------#
+    x = np.array([0.0, 0.0, 0.0, 0.0, np.deg2rad(45.0), 0.0, 0.0, 0.0])
+    xdot = np.array([0.0, 0.0, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+
+    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    assert np.isclose(y_accel_meas[0], ans, 1.0e-6)
+    assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
+
+    #--------------- No motion, rolled right. ---------------#
+    x = np.array([0.0, 0.0, 0.0, np.deg2rad(45.0), 0.0, 0.0, 0.0, 0.0])
+    xdot = np.array([0.0, 0.0, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+
+    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_meas[1], -ans, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
+
+    #--------------- Full steam ahead (udot>0). ---------------#
+    x = np.array([10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    udot_ans = 10.0
+    xdot = np.array([udot_ans, 0.0, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+
+    ans = ekf.GRAV_ACCEL_MPS2
+    assert np.isclose(y_accel_meas[0], udot_ans, 1.0e-6)
+    assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
+
+    #--------------- Starboard acceleration (vdot>0). ---------------#
+    x = np.array([0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    vdot_ans = 10.0
+    xdot = np.array([0.0, vdot_ans, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    ans = ekf.GRAV_ACCEL_MPS2
+    assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_meas[1], vdot_ans, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
+
+def test_get_y_accel_est():
+
+    # Compare with get_y_accel_meas (under conditions with no wind or acceleration).
+    # Estimator assumes udot=vdot=wdot=0, alpha=theta, beta=0.
+
+    # x = [phi, theta]^T
+    # u = [Va, p, q, r]^T
+
+    #--------------- No motion, no pitch or roll. ---------------#
+    x = np.array([0.0, 0.0])
+    xdot = np.array([0.0, 0.0, 0.0, 0.0])
+
+    y_accel_est = ekf.get_y_accel_est(x, xdot)
+
+    assert np.isclose(y_accel_est[0], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_est[1], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_est[2], -ekf.GRAV_ACCEL_MPS2, 1.0e-6)
+
+    #--------------- No motion, pitched nose up. ---------------#
+    x = np.array([0.0, np.deg2rad(45.0)])
+    u = np.array([10.0, 0.0, 0.0, 0.0])
+
+    y_accel_est = ekf.get_y_accel_est(x, u)
+
+    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    assert np.isclose(y_accel_est[0], ans, 1.0e-6)
+    assert np.isclose(y_accel_est[1], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_est[2], -ans, 1.0e-6)
+
+    #--------------- No motion, rolled right. ---------------#
+    x = np.array([np.deg2rad(45.0), 0.0])
+    u = np.array([10.0, 0.0, 0.0, 0.0])
+
+    y_accel_est = ekf.get_y_accel_est(x, u)
+
+    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    assert np.isclose(y_accel_est[0], 0.0, 1.0e-6)
+    assert np.isclose(y_accel_est[1], -ans, 1.0e-6)
+    assert np.isclose(y_accel_est[2], -ans, 1.0e-6)
+
+    #--------------- Random motion. ---------------#
+    phi = np.deg2rad(10.0)
+    theta = np.deg2rad(20.0)
+    p, q, r = 0.1, -0.2, 0.3
+    Va = 25.0
+    u = np.array([Va, p, q, r])
+    x = np.array([phi, theta])
+    y_accel_est = ekf.get_y_accel_est(x, u)
+    # print("\ny_accel_est =", y_accel_est)
+
+    # Estimator assumes u = Va*cos(theta), v = 0, w = Va*sin(theta)
+    u = Va * np.cos(theta)
+    v = 0.0
+    w = Va * np.sin(theta)
+    x = np.array([u, v, w, phi, theta, p, q, r])
+    # Estimator assumes udot = 0, vdot = 0, wdot = 0
+    xdot = np.array([0.0, 0.0, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    # print("y_accel_meas =", y_accel_meas)
+
+    assert np.isclose(y_accel_est[0], y_accel_meas[0], 1.0e-6)
+    assert np.isclose(y_accel_est[1], y_accel_meas[1], 1.0e-6)
+    assert np.isclose(y_accel_est[2], y_accel_meas[2], 1.0e-6)
+
+        #--------------- Random motion. ---------------#
+    phi = np.deg2rad(-5.0)
+    theta = np.deg2rad(-10.0)
+    p, q, r = 0.3, -0.1, -0.2
+    Va = 40.0
+    u = np.array([Va, p, q, r])
+    x = np.array([phi, theta])
+    y_accel_est = ekf.get_y_accel_est(x, u)
+    # print("\ny_accel_est =", y_accel_est)
+
+    # Estimator assumes u = Va*cos(theta), v = 0, w = Va*sin(theta)
+    u = Va * np.cos(theta)
+    v = 0.0
+    w = Va * np.sin(theta)
+    x = np.array([u, v, w, phi, theta, p, q, r])
+    # Estimator assumes udot = 0, vdot = 0, wdot = 0
+    xdot = np.array([0.0, 0.0, 0.0])
+
+    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    # print("y_accel_meas =", y_accel_meas)
+
+    assert np.isclose(y_accel_est[0], y_accel_meas[0], 1.0e-6)
+    assert np.isclose(y_accel_est[1], y_accel_meas[1], 1.0e-6)
+    assert np.isclose(y_accel_est[2], y_accel_meas[2], 1.0e-6)
 
 
 # def test_get_vfpa():

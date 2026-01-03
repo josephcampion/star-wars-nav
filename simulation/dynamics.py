@@ -25,11 +25,11 @@ class LinearDynamics4x4:
 
 def get_gravity_force(m, roll, pitch):
 
-    GRAVITY_ACCELERATION = 9.81 # [m/s^2]
+    GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
     
     DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, 0.0)
 
-    F_grav_ned = np.array([0.0, 0.0, m * GRAVITY_ACCELERATION])
+    F_grav_ned = np.array([0.0, 0.0, m * GRAV_ACCEL_MPS2])
 
     F_grav_bod = DCM_ned2bod @ F_grav_ned
 

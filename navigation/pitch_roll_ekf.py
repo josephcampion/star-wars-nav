@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import simulation.kinematics as kin
 from models.sensors import Accelerometer, Gyroscope
 
-GRAVITY_ACCEL = 9.8067 # [m/s^2]
+GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
 
 ####################################################
 #   Kinematics (TODO: Re-use kin and model.sensors)
@@ -18,11 +18,14 @@ GRAVITY_ACCEL = 9.8067 # [m/s^2]
 def get_x_dot(x, u):
     phi, theta = x
     _, p, q, r = u
+
     sp = np.sin(phi)
     cp = np.cos(phi)
     tt = np.tan(theta)
+    
     phi_dot = p + q * sp * tt + r * cp * tt
     theta_dot = q * cp - r * sp
+    
     return np.array([phi_dot, theta_dot])
 
 # TODO: Make a unit test for this (vs. kinematics for no winds case).
@@ -32,17 +35,22 @@ def get_x_dot(x, u):
 def get_y_accel_est(x, u):
     phi, theta = x
     Va, p, q, r = u
-    g = GRAVITY_ACCEL
+    g = GRAV_ACCEL_MPS2
 
-    y_accel_x_est = q * Va * np.sin(theta) + g * np.sin(theta)
-    y_accel_y_est = r * Va * np.cos(theta) - p * Va * np.sin(theta) - g * np.cos(theta) * np.sin(phi)
-    y_accel_z_est = -q * Va * np.cos(theta) - g * np.cos(theta) * np.cos(phi)
+    st = np.sin(theta)
+    ct = np.cos(theta)
+    sp = np.sin(phi)
+    cp = np.cos(phi)
+
+    y_accel_x_est = q * Va * st + g * st
+    y_accel_y_est = r * Va * ct - p * Va * st - g * ct * sp
+    y_accel_z_est = -q * Va * ct - g * ct * cp
 
     return np.array([y_accel_x_est, y_accel_y_est, y_accel_z_est])
 
 # x = [u, v, w, phi, theta, p, q, r]
 # xdot = [udot, vdot, wdot]
-def get_y_accel_meas(x, xdot): # noise is coming from sensor models
+def get_y_accel_meas(x, xdot=np.zeros(3)): # noise is coming from sensor models
 
     u, v, w = x[0:3]
     phi, theta = x[3:5]
@@ -50,11 +58,11 @@ def get_y_accel_meas(x, xdot): # noise is coming from sensor models
 
     udot, vdot, wdot = xdot
 
-    g = GRAVITY_ACCEL
+    g = GRAV_ACCEL_MPS2
 
-    y_accel_x  = udot + q*w - r*v + g*np.sin(theta)
-    y_accel_y = vdot + r*u - p*w - g*np.cos(theta)*np.sin(phi)
-    y_accel_z = wdot + p*v - q*u - g*np.cos(theta)*np.cos(phi)
+    y_accel_x  = udot + q*w - r*v + g * np.sin(theta)
+    y_accel_y = vdot + r*u - p*w - g * np.cos(theta) * np.sin(phi)
+    y_accel_z = wdot + p*v - q*u - g * np.cos(theta) * np.cos(phi)
 
     return np.array([y_accel_x, y_accel_y, y_accel_z])
 
@@ -73,9 +81,9 @@ def get_J_df_dx(x, u):
     tt = np.tan(theta)
     ct = np.cos(theta)
 
-    dphi_dot_dphi = q*cp*tt - r*sp*tt
-    dphi_dot_dtheta = (q*sp + r*cp) / (ct**2)
-    dtheta_dot_dphi = -q*sp - r*cp
+    dphi_dot_dphi = q * cp * tt - r * sp * tt
+    dphi_dot_dtheta = (q * sp + r * cp) / (ct**2)
+    dtheta_dot_dphi = -q * sp - r * cp
     dtheta_dot_dtheta = 0.0
 
     return np.array([
@@ -94,11 +102,11 @@ def get_J_dh_dx(x, u):
     st = np.sin(theta)
 
     dax_sens_dphi = 0.0
-    dax_sens_dtheta = -g*ct*cp
-    day_sens_dphi = g*ct*sp
-    day_sens_dtheta = q*Va*ct + g*cp
-    daz_sens_dphi = -r*Va*st - p*Va*ct + g*st*sp
-    daz_sens_dtheta = q*Va*sp + g*st*cp
+    dax_sens_dtheta = -g * ct * cp
+    day_sens_dphi = g * ct * sp
+    day_sens_dtheta = q * Va * ct + g * cp
+    daz_sens_dphi = -r * Va * st - p * Va * ct + g * st * sp
+    daz_sens_dtheta = q * Va * sp + g * st * cp
 
     return np.array([
         [dax_sens_dphi, dax_sens_dtheta],

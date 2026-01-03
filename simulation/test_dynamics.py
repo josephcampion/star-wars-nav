@@ -6,14 +6,14 @@ import models.aerodynamics as aero
 from models.propulsion import EngineProperties as prop
 from models.mass_props import MassProperties as mass
 from models.vehicle import Vehicle
-from simulation.dynamics import get_gravity_force, get_forces_and_moments
+from simulation.dynamics import get_gravity_force, get_forces_and_moments, GRAV_ACCEL_MPS2
 
 import models.mass_props as mp
 import simulation.kinematics as kin
 
 def get_gravity_force_explicit(m, roll, pitch):
 
-    g = 9.81 # [m/s^2]
+    g = GRAV_ACCEL_MPS2
 
     cr = np.cos(roll)
     sr = np.sin(roll)
