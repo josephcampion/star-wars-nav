@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import simulation.kinematics as kin
 from models.sensors import Accelerometer, Gyroscope
 
+GRAVITY_ACCEL = 9.8067 # [m/s^2]
+
 ####################################################
 #   Kinematics (TODO: Re-use kin and model.sensors)
 ####################################################
@@ -30,7 +32,7 @@ def get_x_dot(x, u):
 def get_y_accel_est(x, u):
     phi, theta = x
     Va, p, q, r = u
-    g = 9.81 # [m/s^2]
+    g = GRAVITY_ACCEL
 
     y_accel_x_est = q * Va * np.sin(theta) + g * np.sin(theta)
     y_accel_y_est = r * Va * np.cos(theta) - p * Va * np.sin(theta) - g * np.cos(theta) * np.sin(phi)
@@ -48,7 +50,7 @@ def get_y_accel_meas(x, xdot): # noise is coming from sensor models
 
     udot, vdot, wdot = xdot
 
-    g = 9.81
+    g = GRAVITY_ACCEL
 
     y_accel_x  = udot + q*w - r*v + g*np.sin(theta)
     y_accel_y = vdot + r*u - p*w - g*np.cos(theta)*np.sin(phi)
@@ -141,252 +143,258 @@ def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
     #   Initialize Simulation Parameters
 ####################################################
 
-Tsim = 30.0 # seconds
-dt = 0.001 # timestep
-t0 = 0.0
+if __name__ == "__main__":
 
-time = np.arange(t0, Tsim, dt)
-nt = len(time)
+    Tsim = 30.0 # seconds
+    dt = 0.01 # timestep
+    t0 = 0.0
 
-# Set truth motion for EKF testing
-u0 = 25.0 # [m/s]
-w0 = 2.0 # [m/s]
-u_truth = u0 * np.ones(nt) + 1.0 / Tsim * np.linspace(t0,Tsim,nt)
-v_truth = np.zeros(nt)
-w_truth = w0 * np.ones(nt) - 0.0 / Tsim * np.linspace(t0,Tsim,nt)
+    time = np.arange(t0, Tsim, dt)
+    nt = len(time)
 
-p_truth = np.deg2rad(0.0) * np.sin(0.25*time)
-q_truth = -np.deg2rad(1.0) * np.sin(1.0*time)
-r_truth = np.deg2rad(0.0) * np.sin(0.5*time)
-# r_truth = 3.0 * np.sin(1*time)
+    # Set truth motion for EKF testing
+    u0 = 25.0 # [m/s]
+    w0 = 2.0 # [m/s]
+    u_truth = u0 * np.ones(nt) + 0.0 / Tsim * np.linspace(t0,Tsim,nt)
+    v_truth = np.zeros(nt)
+    w_truth = w0 * np.ones(nt) - 0.0 / Tsim * np.linspace(t0,Tsim,nt)
 
-phi0 = np.deg2rad(-3.0)
-theta0 = np.deg2rad(5.0)
+    p_truth = np.deg2rad(0.0) * np.sin(0.25*time)
+    q_truth = -np.deg2rad(0.0) * np.sin(1.0*time)
+    r_truth = np.deg2rad(0.0) * np.sin(0.5*time)
+    # r_truth = 3.0 * np.sin(1*time)
 
-phi_truth = phi0 + np.zeros(nt)
-theta_truth = theta0 + np.zeros(nt)
-# psi_truth = np.zeros(nt)
+    phi0 = np.deg2rad(10.0)
+    theta0 = np.deg2rad(10.0)
 
-phi_dot_truth = np.zeros(nt)
-theta_dot_truth = np.zeros(nt)
+    phi_truth = phi0 + np.zeros(nt)
+    theta_truth = theta0 + np.zeros(nt)
+    # psi_truth = np.zeros(nt)
 
-####################################################
-    #   Initialize Sensor Models
-####################################################
+    phi_dot_truth = np.zeros(nt)
+    theta_dot_truth = np.zeros(nt)
 
-# Make accelerometer sensor models
-accel_bias = 0.0 # 1.e-3
-accel_noise = 0.0 # 1.e-3
-x_accel = Accelerometer(accel_bias, accel_noise)
-y_accel = Accelerometer(accel_bias, accel_noise)
-z_accel = Accelerometer(accel_bias, accel_noise)
+    ####################################################
+        #   Initialize Sensor Models
+    ####################################################
 
-# Make gyroscope sensor models
-gyro_bias = 0.0 # 1.e-3
-gyro_noise = 0.0 # 1.e-3
-x_gyro = Gyroscope(gyro_bias, gyro_noise)
-y_gyro = Gyroscope(gyro_bias, gyro_noise)
-z_gyro = Gyroscope(gyro_bias, gyro_noise)
+    # Make accelerometer sensor models
+    accel_bias = 0.0 # 1.e-3
+    accel_noise = 0.0 # 1.e-3
+    x_accel = Accelerometer(accel_bias, accel_noise)
+    y_accel = Accelerometer(accel_bias, accel_noise)
+    z_accel = Accelerometer(accel_bias, accel_noise)
 
-y_accel_x_truth = np.zeros(nt)
-y_accel_y_truth = np.zeros(nt)
-y_accel_z_truth = np.zeros(nt)
+    # Make gyroscope sensor models
+    gyro_bias = 0.0 # 1.e-3
+    gyro_noise = 0.0 # 1.e-3
+    x_gyro = Gyroscope(gyro_bias, gyro_noise)
+    y_gyro = Gyroscope(gyro_bias, gyro_noise)
+    z_gyro = Gyroscope(gyro_bias, gyro_noise)
 
-y_accel_x_meas = np.zeros(nt)
-y_accel_y_meas = np.zeros(nt)
-y_accel_z_meas = np.zeros(nt)
+    y_accel_x_truth = np.zeros(nt)
+    y_accel_y_truth = np.zeros(nt)
+    y_accel_z_truth = np.zeros(nt)
 
-x_gyro_meas = np.zeros(nt)
-y_gyro_meas = np.zeros(nt)
-z_gyro_meas = np.zeros(nt)
+    y_accel_x_meas = np.zeros(nt)
+    y_accel_y_meas = np.zeros(nt)
+    y_accel_z_meas = np.zeros(nt)
 
-####################################################
-    #   Initialize EKF Estimation
-####################################################
+    x_gyro_meas = np.zeros(nt)
+    y_gyro_meas = np.zeros(nt)
+    z_gyro_meas = np.zeros(nt)
 
-x_hat = np.array([phi0, theta0])
-P_hat = np.eye(2)
-Q = np.eye(2) * 1.e-4
-R = np.eye(3) * 1.e-4
+    ####################################################
+        #   Initialize EKF Estimation
+    ####################################################
 
-x_hat_log = np.zeros((nt, 2))
-P_log = np.zeros((nt, 2, 2))
+    x_hat = np.array([phi0, theta0])
+    P_hat = np.eye(2)
+    Q = np.eye(2) * 1.e-4
+    R = np.eye(3) * 1.e-4
 
-####################################################
-    #   Run Simulation of Sensor Models
-####################################################
+    x_hat_log = np.zeros((nt, 2))
+    P_log = np.zeros((nt, 2, 2))
 
-for i in range(nt):
+    ####################################################
+        #   Run Simulation of Sensor Models
+    ####################################################
 
-    phi, theta = phi_truth[i], theta_truth[i]
-    u, v, w = u_truth[i], v_truth[i], w_truth[i]
-    p, q, r = p_truth[i], q_truth[i], r_truth[i]
+    for i in range(nt):
 
-    x_truth = np.array([phi, theta])
-    Va = np.sqrt(u**2 + v**2 + w**2)
-    phi_dot, theta_dot = get_x_dot(x_truth, np.array([Va, p, q, r]))
+        phi, theta = phi_truth[i], theta_truth[i]
+        u, v, w = u_truth[i], v_truth[i], w_truth[i]
+        p, q, r = p_truth[i], q_truth[i], r_truth[i]
 
-    phi_dot_truth[i] = phi_dot
-    theta_dot_truth[i] = theta_dot
+        x_truth = np.array([phi, theta])
+        Va = np.sqrt(u**2 + v**2 + w**2)
+        phi_dot, theta_dot = get_x_dot(x_truth, np.array([Va, p, q, r]))
 
-    # Get sensor measurements
-    x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])
-    y_gyro_meas[i] = y_gyro.get_sensor_data(q_truth[i])
-    z_gyro_meas[i] = z_gyro.get_sensor_data(r_truth[i])
+        phi_dot_truth[i] = phi_dot
+        theta_dot_truth[i] = theta_dot
 
-    # Insert truth motion into sensor models
-    # x = [u, v, w, phi, theta, p, q, r]
-    # xdot = [udot, vdot, wdot]
-    x_accel_in = np.array([u, v, w, phi, theta, p, q, r])
-    # TODO: Insert x_dot_accel_in from kinematics.
-    x_dot_accel_in = np.zeros(3) # np.array([r])
-    y_accel_meas = get_y_accel_meas(x_accel_in, x_dot_accel_in)
+        # Get sensor measurements
+        x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])
+        y_gyro_meas[i] = y_gyro.get_sensor_data(q_truth[i])
+        z_gyro_meas[i] = z_gyro.get_sensor_data(r_truth[i])
 
-    y_accel_x_truth[i] = y_accel_meas[0]
-    y_accel_y_truth[i] = y_accel_meas[1]
-    y_accel_z_truth[i] = y_accel_meas[2]
+        # Insert truth motion into sensor models
+        # x = [u, v, w, phi, theta, p, q, r]
+        # xdot = [udot, vdot, wdot]
+        x_accel_in = np.array([u, v, w, phi, theta, p, q, r])
+        # TODO: Insert x_dot_accel_in from kinematics.
+        x_dot_accel_in = np.zeros(3) # np.array([r])
+        y_accel_meas = get_y_accel_meas(x_accel_in, x_dot_accel_in)
 
-    y_accel_x_meas[i] = x_accel.get_sensor_data(y_accel_x_truth[i])
-    y_accel_y_meas[i] = y_accel.get_sensor_data(y_accel_y_truth[i])
-    y_accel_z_meas[i] = z_accel.get_sensor_data(y_accel_z_truth[i])
+        y_accel_x_truth[i] = y_accel_meas[0]
+        y_accel_y_truth[i] = y_accel_meas[1]
+        y_accel_z_truth[i] = y_accel_meas[2]
 
-    # TODO: Use airspeed sensor model to get Va (and insert wind!).
-    Va = np.sqrt(u**2 + v**2 + w**2)
+        y_accel_x_meas[i] = x_accel.get_sensor_data(y_accel_x_truth[i])
+        y_accel_y_meas[i] = y_accel.get_sensor_data(y_accel_y_truth[i])
+        y_accel_z_meas[i] = z_accel.get_sensor_data(y_accel_z_truth[i])
 
-    # Run EKF step
-    y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    x_hat, P_hat = ekf_step(x_hat, P_hat, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt, N=10)
+        # TODO: Use airspeed sensor model to get Va (and insert wind!).
+        Va = np.sqrt(u**2 + v**2 + w**2)
 
-    x_hat_log[i] = x_hat
-    P_log[i] = P_hat
+        # Run EKF step
+        y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
+        x_hat, P_hat = ekf_step(x_hat, P_hat, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt, N=10)
 
-    if i < (nt-1): # propagate truth motion
-        phi_truth[i+1] = phi_truth[i] + phi_dot * dt
-        theta_truth[i+1] = theta_truth[i] + theta_dot * dt
+        x_hat_log[i] = x_hat
+        P_log[i] = P_hat
 
-
-####################################################
-            #   Plot Truth Rates
-####################################################
-
-_, axs = plt.subplots(3,2)
-
-axs[0,0].plot(time, u_truth, label='Truth')
-axs[0,0].grid(True)
-# axs[0,0].set_xlabel('Time [s]')
-axs[0,0].set_ylabel('[rad/s]')
-axs[0,0].set_title(r'$u$')
-axs[0,0].legend()
-
-axs[1,0].plot(time, v_truth, label='Truth')
-axs[1,0].grid(True)
-# axs[1,0].set_xlabel('Time [s]')
-axs[1,0].set_ylabel('[rad/s]')
-axs[1,0].set_title(r'$v$')
-axs[1,0].legend()
-
-axs[2,0].plot(time, w_truth, label='Truth')
-axs[2,0].grid(True)
-axs[2,0].set_xlabel('Time [s]')
-axs[2,0].set_ylabel('[rad/s]')
-axs[2,0].set_title(r'$w$')
-axs[2,0].legend()
-
-axs[0,1].plot(time, p_truth, label='Truth')
-axs[0,1].plot(time, x_gyro_meas, label='Sensor', linestyle=':')
-axs[0,1].grid(True)
-# axs[0,1].set_xlabel('Time [s]')
-axs[0,1].set_ylabel('[rad/s]')
-axs[0,1].set_title(r'$p$ vs. $p_{meas}$')
-axs[0,1].legend()
-
-axs[1,1].plot(time, q_truth, label='Truth')
-axs[1,1].plot(time, y_gyro_meas, label='Sensor', linestyle=':')
-axs[1,1].grid(True)
-# axs[1,1].set_xlabel('Time [s]')
-axs[1,1].set_ylabel('[rad/s]')
-axs[1,1].set_title(r'$q$ vs. $q_{meas}$')
-axs[1,1].legend()
-
-axs[2,1].plot(time, r_truth, label='Truth')
-axs[2,1].plot(time, z_gyro_meas, label='Sensor', linestyle=':')
-axs[2,1].grid(True)
-axs[2,1].set_xlabel('Time [s]')
-axs[2,1].set_ylabel('[rad/s]')
-axs[2,1].set_title(r'$r$ vs. $r_{meas}$')
-axs[2,1].legend()
-
-plt.suptitle('Sensed Acceleration vs. Measured Acceleration')
-
-####################################################
-    #   Plot Acceleration
-####################################################
-
-_, axs = plt.subplots(3,1)
-
-axs[0].plot(time, y_accel_x_truth, label='Truth')
-axs[0].plot(time, y_accel_x_meas, label='Sensor', linestyle=':')
-axs[0].grid(True)
-# axs[0].set_xlabel('Time [s]')
-axs[0].set_ylabel('[m/s^2]')
-axs[0].set_title(r'$y_{accel,x}$ vs. $y_{accel,x,meas}$')
-axs[0].legend()
-
-axs[1].plot(time, y_accel_y_truth, label='Truth')
-axs[1].plot(time, y_accel_y_meas, label='Sensor', linestyle=':')
-axs[1].grid(True)
-# axs[1].set_xlabel('Time [s]')
-axs[1].set_ylabel('[m/s^2]')
-axs[1].set_title(r'$y_{accel,y}$ vs. $y_{accel,y,meas}$')
-axs[1].legend()
-
-axs[2].plot(time, y_accel_z_truth, label='Truth')
-axs[2].plot(time, y_accel_z_meas, label='Sensor', linestyle=':')
-axs[2].grid(True)
-axs[2].set_xlabel('Time [s]')
-axs[2].set_ylabel('[m/s^2]')
-axs[2].set_title(r'$y_{accel,z}$ vs. $y_{accel,z,meas}$')
-axs[2].legend()
-
-plt.suptitle('Attitude EKF Test')
+        if i < (nt-1): # propagate truth motion
+            phi_truth[i+1] = phi_truth[i] + phi_dot * dt
+            theta_truth[i+1] = theta_truth[i] + theta_dot * dt
 
 
-####################################################
-    #   Plot Attitude (TODO: Estimation)
-####################################################
+    ####################################################
+                #   Plot Truth Rates
+    ####################################################
 
-_, axs = plt.subplots(2,2)
+    _, axs = plt.subplots(3,2)
 
-axs[0,0].plot(time, phi_truth, label='Truth')
-axs[0,0].plot(time, x_hat_log[:,0], label='Estimation', linestyle=':')
-axs[0,0].grid(True)
-# axs[0,0].set_xlabel('Time [s]')
-axs[0,0].set_ylabel('[rad/s]')
-axs[0,0].set_title(r'$\phi$ vs. $\hat{\phi}$')
-axs[0,0].legend()
+    axs[0,0].plot(time, u_truth, label='Truth')
+    axs[0,0].grid(True)
+    # axs[0,0].set_xlabel('Time [s]')
+    axs[0,0].set_ylabel('[rad/s]')
+    axs[0,0].set_title(r'$u$')
+    axs[0,0].legend()
 
-axs[1,0].plot(time, phi_dot_truth, label='Truth')
-axs[1,0].grid(True)
-axs[1,0].set_xlabel('Time [s]')
-axs[1,0].set_ylabel('[rad/s]')
-axs[1,0].set_title(r'$\dot{\phi}$')
-axs[1,0].legend()
+    axs[1,0].plot(time, v_truth, label='Truth')
+    axs[1,0].grid(True)
+    # axs[1,0].set_xlabel('Time [s]')
+    axs[1,0].set_ylabel('[rad/s]')
+    axs[1,0].set_title(r'$v$')
+    axs[1,0].legend()
 
-axs[0,1].plot(time, theta_truth, label='Truth')
-axs[0,1].plot(time, x_hat_log[:,1], label='Estimation', linestyle=':')
-axs[0,1].grid(True)
-# axs[0,1].set_xlabel('Time [s]')
-axs[0,1].set_ylabel('[rad/s]')
-axs[0,1].set_title(r'$\theta$ vs. $\hat{\theta}$')
-axs[0,1].legend()
+    axs[2,0].plot(time, w_truth, label='Truth')
+    axs[2,0].grid(True)
+    axs[2,0].set_xlabel('Time [s]')
+    axs[2,0].set_ylabel('[rad/s]')
+    axs[2,0].set_title(r'$w$')
+    axs[2,0].legend()
 
-axs[1,1].plot(time, theta_dot_truth, label='Truth')
-axs[1,1].grid(True)
-axs[1,1].set_xlabel('Time [s]')
-axs[1,1].set_ylabel('[rad/s]')
-axs[1,1].set_title(r'$\dot{\theta}$')
-axs[1,1].legend()
+    axs[0,1].plot(time, p_truth, label='Truth')
+    axs[0,1].plot(time, x_gyro_meas, label='Sensor', linestyle=':')
+    axs[0,1].grid(True)
+    # axs[0,1].set_xlabel('Time [s]')
+    axs[0,1].set_ylabel('[rad/s]')
+    axs[0,1].set_title(r'$p$ vs. $p_{meas}$')
+    axs[0,1].legend()
 
-plt.suptitle('Attitude EKF Test')
+    axs[1,1].plot(time, q_truth, label='Truth')
+    axs[1,1].plot(time, y_gyro_meas, label='Sensor', linestyle=':')
+    axs[1,1].grid(True)
+    # axs[1,1].set_xlabel('Time [s]')
+    axs[1,1].set_ylabel('[rad/s]')
+    axs[1,1].set_title(r'$q$ vs. $q_{meas}$')
+    axs[1,1].legend()
 
-plt.show()
+    axs[2,1].plot(time, r_truth, label='Truth')
+    axs[2,1].plot(time, z_gyro_meas, label='Sensor', linestyle=':')
+    axs[2,1].grid(True)
+    axs[2,1].set_xlabel('Time [s]')
+    axs[2,1].set_ylabel('[rad/s]')
+    axs[2,1].set_title(r'$r$ vs. $r_{meas}$')
+    axs[2,1].legend()
+
+    plt.suptitle('Sensed Acceleration vs. Measured Acceleration')
+
+    ####################################################
+        #   Plot Acceleration
+    ####################################################
+
+    _, axs = plt.subplots(3,1)
+
+    axs[0].plot(time, y_accel_x_truth, label='Truth')
+    axs[0].plot(time, y_accel_x_meas, label='Sensor', linestyle=':')
+    axs[0].grid(True)
+    # axs[0].set_xlabel('Time [s]')
+    axs[0].set_ylabel('[m/s^2]')
+    axs[0].set_title(r'$y_{accel,x}$ vs. $y_{accel,x,meas}$')
+    axs[0].legend()
+
+    axs[1].plot(time, y_accel_y_truth, label='Truth')
+    axs[1].plot(time, y_accel_y_meas, label='Sensor', linestyle=':')
+    axs[1].grid(True)
+    # axs[1].set_xlabel('Time [s]')
+    axs[1].set_ylabel('[m/s^2]')
+    axs[1].set_title(r'$y_{accel,y}$ vs. $y_{accel,y,meas}$')
+    axs[1].legend()
+
+    axs[2].plot(time, y_accel_z_truth, label='Truth')
+    axs[2].plot(time, y_accel_z_meas, label='Sensor', linestyle=':')
+    axs[2].grid(True)
+    axs[2].set_xlabel('Time [s]')
+    axs[2].set_ylabel('[m/s^2]')
+    axs[2].set_title(r'$y_{accel,z}$ vs. $y_{accel,z,meas}$')
+    axs[2].legend()
+
+    plt.suptitle('Attitude EKF Test')
+
+
+    ####################################################
+        #   Plot Attitude (TODO: Estimation)
+    ####################################################
+
+    _, axs = plt.subplots(2,2)
+
+    axs[0,0].plot(time, np.rad2deg(phi_truth), label='Truth')
+    axs[0,0].plot(time, np.rad2deg(x_hat_log[:,0]), label='Estimation', linestyle=':')
+    axs[0,0].grid(True)
+    # axs[0,0].set_xlabel('Time [s]')
+    # axs[0,0].set_ylabel('[rad]')
+    axs[0,0].set_ylabel('[deg]')
+    axs[0,0].set_title(r'$\phi$ vs. $\hat{\phi}$')
+    axs[0,0].legend()
+
+    axs[1,0].plot(time, np.rad2deg(phi_dot_truth), label='Truth')
+    axs[1,0].grid(True)
+    axs[1,0].set_xlabel('Time [s]')
+    # axs[1,0].set_ylabel('[rad/s]')
+    axs[1,0].set_ylabel('[deg/s]')
+    axs[1,0].set_title(r'$\dot{\phi}$')
+    axs[1,0].legend()
+
+    axs[0,1].plot(time, np.rad2deg(theta_truth), label='Truth')
+    axs[0,1].plot(time, np.rad2deg(x_hat_log[:,1]), label='Estimation', linestyle=':')
+    axs[0,1].grid(True)
+    # axs[0,1].set_xlabel('Time [s]')
+    # axs[0,1].set_ylabel('[rad]')
+    axs[0,1].set_ylabel('[deg]')
+    axs[0,1].set_title(r'$\theta$ vs. $\hat{\theta}$')
+    axs[0,1].legend()
+
+    axs[1,1].plot(time, np.rad2deg(theta_dot_truth), label='Truth')
+    axs[1,1].grid(True)
+    axs[1,1].set_xlabel('Time [s]')
+    # axs[1,1].set_ylabel('[rad/s]')
+    axs[1,1].set_ylabel('[deg/s]')
+    axs[1,1].set_title(r'$\dot{\theta}$')
+    axs[1,1].legend()
+
+    plt.suptitle('Attitude EKF Test')
+
+    plt.show()
