@@ -109,6 +109,7 @@ def get_J_dh_dx(x, u):
                 #   EKF Algo
 ####################################################
 
+# TODO: Unit test this! Relying on Cursor and whims here...
 def wrap_phi_and_theta(x):
     phi, theta = x
     phi = np.mod(phi + np.pi, np.pi / 2.0) - np.pi / 4.0
@@ -141,22 +142,22 @@ def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
 ####################################################
 
 Tsim = 30.0 # seconds
-dt = 0.01 # timestep
+dt = 0.001 # timestep
 t0 = 0.0
 
 time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
 # Set truth motion for EKF testing
-u0 = 30.0 # [m/s]
-w0 = 1.0 # [m/s]
-u_truth = u0 * np.ones(nt) + 3.0 / Tsim * np.linspace(t0,Tsim,nt)
+u0 = 25.0 # [m/s]
+w0 = 2.0 # [m/s]
+u_truth = u0 * np.ones(nt) + 1.0 / Tsim * np.linspace(t0,Tsim,nt)
 v_truth = np.zeros(nt)
-w_truth = w0 * np.ones(nt) - 1.0 / Tsim * np.linspace(t0,Tsim,nt)
+w_truth = w0 * np.ones(nt) - 0.0 / Tsim * np.linspace(t0,Tsim,nt)
 
-p_truth = np.deg2rad(1.0) * np.sin(0.5*time)
-q_truth = -np.deg2rad(2.0) * np.sin(0.25*time)
-r_truth = np.deg2rad(3.0) * np.sin(0.1*time)
+p_truth = np.deg2rad(0.0) * np.sin(0.25*time)
+q_truth = -np.deg2rad(1.0) * np.sin(1.0*time)
+r_truth = np.deg2rad(0.0) * np.sin(0.5*time)
 # r_truth = 3.0 * np.sin(1*time)
 
 phi0 = np.deg2rad(-3.0)
