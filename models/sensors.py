@@ -5,6 +5,25 @@ import numpy as np
 This file contains the sensor models for the aircraft.
 """
 
+# x = [u, v, w, phi, theta, p, q, r]
+# xdot = [udot, vdot, wdot]
+def get_y_accel_meas(x, xdot=np.zeros(3)): # noise is coming from sensor models
+
+    u, v, w = x[0:3]
+    phi, theta = x[3:5]
+    p, q, r = x[5:8]
+
+    udot, vdot, wdot = xdot
+
+    g = 9.8067 # [m/s^2]
+
+    y_accel_x  = udot + q*w - r*v + g * np.sin(theta)
+    y_accel_y = vdot + r*u - p*w - g * np.cos(theta) * np.sin(phi)
+    y_accel_z = wdot + p*v - q*u - g * np.cos(theta) * np.cos(phi)
+
+    return np.array([y_accel_x, y_accel_y, y_accel_z])
+
+
 class SensorModel:
     def __init__(self, sensor_type, bias=0.0, noise_std=0.0):
         self.sensor_type = sensor_type
