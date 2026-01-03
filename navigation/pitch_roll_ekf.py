@@ -44,24 +44,6 @@ def get_y_accel_est(x, u):
 
     return np.array([y_accel_x_est, y_accel_y_est, y_accel_z_est])
 
-# x = [u, v, w, phi, theta, p, q, r]
-# xdot = [udot, vdot, wdot]
-def get_y_accel_meas(x, xdot=np.zeros(3)): # noise is coming from sensor models
-
-    u, v, w = x[0:3]
-    phi, theta = x[3:5]
-    p, q, r = x[5:8]
-
-    udot, vdot, wdot = xdot
-
-    g = GRAV_ACCEL_MPS2
-
-    y_accel_x  = udot + q*w - r*v + g * np.sin(theta)
-    y_accel_y = vdot + r*u - p*w - g * np.cos(theta) * np.sin(phi)
-    y_accel_z = wdot + p*v - q*u - g * np.cos(theta) * np.cos(phi)
-
-    return np.array([y_accel_x, y_accel_y, y_accel_z])
-
 
 ####################################################
             #   Jacobians for EKF
@@ -116,22 +98,22 @@ def get_J_dh_dx(x, u):
                 #   EKF Algo
 ####################################################
 
-def wrap_to_pi_minus_pi(x):
-    return np.arctan2(np.sin(x), np.cos(x))
+# def wrap_to_pi_minus_pi(x):
+#     return np.arctan2(np.sin(x), np.cos(x))
 
-def condition_residual(x_err):
-    pitch_residual = wrap_to_pi_minus_pi(x_err[0])
-    roll_residual = np.clip(x_err[1], -np.deg2rad(20.0), np.deg2rad(20.0))
-    return np.array([pitch_residual, roll_residual])
+# def condition_residual(x_err):
+#     pitch_residual = wrap_to_pi_minus_pi(x_err[0])
+#     roll_residual = np.clip(x_err[1], -np.deg2rad(20.0), np.deg2rad(20.0))
+#     return np.array([pitch_residual, roll_residual])
 
-def get_innovation(y_meas, x_hat_pred, u):
-    y_est = get_y_accel_est(x_hat_pred, u)
-    y_err = y_meas - y_est
-    return y_err
+# def get_innovation(y_meas, x_hat_pred, u):
+#     y_est = get_y_accel_est(x_hat_pred, u)
+#     y_err = y_meas - y_est
+#     return y_err
 
-def get_residual(L, y_err):
-    x_err = L @ y_err
-    return x_err # condition_residual(x_err)
+# def get_residual(L, y_err):
+#     x_err = L @ y_err
+#     return x_err # condition_residual(x_err)
 
 def ekf_predict(x_hat, P_hat, Q, u, T_out, N=1):
     dt_step = T_out / N
@@ -141,17 +123,17 @@ def ekf_predict(x_hat, P_hat, Q, u, T_out, N=1):
         P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
     return x_hat_pred, P_pred
 
-def get_kalman_gain(x_hat_pred, P_pred, R, u):
-    C = get_J_dh_dx(x_hat_pred, u)
-    L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
-    return C, L
+# def get_kalman_gain(x_hat_pred, P_pred, R, u):
+#     C = get_J_dh_dx(x_hat_pred, u)
+#     L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
+#     return C, L
 
 def ekf_update(x_hat_pred, P_pred, R, u, y_meas):
-    C, L = get_kalman_gain(x_hat_pred, P_pred, R, u)
-    y = get_innovation(y_meas, x_hat_pred, u)
-    x_hat_upd = x_hat_pred + get_residual(L, y)
+    C = get_J_dh_dx(x_hat_pred, u)
+    L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
+    y_est = get_y_accel_est(x_hat_pred, u)
+    x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
     P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
-
     return x_hat_upd, P_upd
 
 def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):

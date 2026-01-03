@@ -39,14 +39,14 @@ theta_dot_truth = np.zeros(nt)
 ####################################################
 
 # Make accelerometer sensor models
-accel_bias = 1.e-3
+accel_bias = 0.e-3
 accel_noise = 1.e-3
 x_accel = sens.Accelerometer(accel_bias, accel_noise)
 y_accel = sens.Accelerometer(accel_bias, accel_noise)
 z_accel = sens.Accelerometer(accel_bias, accel_noise)
 
 # Make gyroscope sensor models
-gyro_bias = 1.e-4
+gyro_bias = 0.e-4
 gyro_noise = 1.e-4
 x_gyro = sens.Gyroscope(gyro_bias, gyro_noise)
 y_gyro = sens.Gyroscope(gyro_bias, gyro_noise)
