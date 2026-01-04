@@ -10,14 +10,14 @@ GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
 class PitchRollEKF:
     # x = [phi, theta]^T
     # u = [Va, p, q, r]^T
-    def __init__(self, Q, R):
+    def __init__(self, Q, R, x0=np.array([0.0, 0.0]), u0=np.array([0.0, 0.0, 0.0, 0.0])):
         self._Q = Q
         self._R = R
-        self._x_hat = np.array([0.0, 0.0])
+        self._x_hat = x0
         self._P_hat = np.eye(2)
-        self._x_hat_pred = np.array([0.0, 0.0])
+        self._x_hat_pred = x0.copy() # is copy necessary?
         self._P_pred = np.eye(2)
-        self._x_hat_upd = np.array([0.0, 0.0])
+        self._x_hat_upd = x0.copy()
         self._P_upd = np.eye(2)
         # TODO: Store fields you want to log.
 
@@ -29,7 +29,7 @@ class PitchRollEKF:
     # f(x,u)
     # x = [phi, theta]^T
     # u = [Va, p, q, r]^T
-    def get_x_dot(self,x, u):
+    def get_x_dot(self, x, u):
         phi, theta = x
         _, p, q, r = u
 
@@ -119,15 +119,15 @@ class PitchRollEKF:
                     #   EKF Algo
     ####################################################
 
-    def ekf_predict(self,x_hat, P_hat, Q, u, T_out, N=1):
+    def predict(self,x_hat, P, Q, u, T_out, N=1):
         dt_step = T_out / N
-        for i in range(N):
-            x_hat_pred = x_hat + dt_step * self.get_x_dot(x_hat, u)
+        for _ in range(N):
+            x_hat = x_hat + dt_step * self.get_x_dot(x_hat, u)
             A = self.get_J_df_dx(x_hat, u)
-            P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
-        return x_hat_pred, P_pred
+            P = P + dt_step * (A @ P + P @ A.T + Q)
+        return x_hat, P
 
-    def ekf_update(self, x_hat_pred, P_pred, R, u, y_meas):
+    def update(self, x_hat_pred, P_pred, R, u, y_meas):
         C = self.get_J_dh_dx(x_hat_pred, u)
         L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
         y_est = self.get_y_accel_est(x_hat_pred, u)
@@ -136,11 +136,8 @@ class PitchRollEKF:
         return x_hat_upd, P_upd
 
     def ekf_step(self, x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
-
-        x_hat_pred, P_pred = self.ekf_predict(x_hat, P_hat, Q, u, T_out, N)
-        
-        x_hat_upd, P_upd = self.ekf_update(x_hat_pred, P_pred, R, u, y_meas)
-
+        x_hat_pred, P_pred = self.predict(x_hat, P_hat, Q, u, T_out, N=N)
+        x_hat_upd, P_upd = self.update(x_hat_pred, P_pred, R, u, y_meas)
         return x_hat_pred, P_pred, x_hat_upd, P_upd
 
 ####################################################

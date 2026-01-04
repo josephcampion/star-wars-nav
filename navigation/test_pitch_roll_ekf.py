@@ -8,13 +8,14 @@ from models.sensors import get_y_accel_meas
 phi0 = np.deg2rad(10.0)
 theta0 = np.deg2rad(10.0)
 x_hat_pred = np.array([phi0, theta0]) # + random_init 
-P_pred = np.eye(2)
-x_hat_upd = np.array([phi0, theta0]) # + random_init 
-P_upd = np.eye(2)
+P_pred = np.eye(2) * 1.e-2
+x_hat_upd = x_hat_pred.copy()
+P_upd = P_pred.copy()
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
 ekf = PitchRollEKF(Q, R)
 
+# TODO: Move this to test_sensors.py
 def test_get_y_accel_meas():
 
     # x = [u, v, w, phi, theta, p, q, r]
