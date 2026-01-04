@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import models.sensors as sens
+import simulation.rotations as rt
 import navigation.pitch_roll_ekf as ekf
 
 Tsim = 10.0 # seconds
@@ -94,11 +95,12 @@ for i in range(nt):
 
     x_truth = np.array([phi, theta])
     Va = np.sqrt(u**2 + v**2 + w**2)
-    # TODO: Replace 'get_x_dot' with function from kinematics.
-    phi_dot, theta_dot = ekf.get_x_dot(x_truth, np.array([Va, p, q, r]))
 
-    phi_dot_truth[i] = phi_dot
-    theta_dot_truth[i] = theta_dot
+    A_rpy_dot_to_pqr = rt.get_pqr_to_rpy_dot(phi, theta)
+    rpy_dot = A_rpy_dot_to_pqr @ np.array([p, q, r])
+
+    phi_dot_truth[i] = rpy_dot[0]
+    theta_dot_truth[i] = rpy_dot[1]
 
     # Get sensor measurements
     x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])
