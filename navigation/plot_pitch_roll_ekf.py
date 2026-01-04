@@ -6,7 +6,7 @@ import models.sensors as sens
 import simulation.rotations as rt
 import navigation.pitch_roll_ekf as ekf
 
-Tsim = 10.0 # seconds
+Tsim = 30.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
 
@@ -16,9 +16,9 @@ nt = len(time)
 # Set truth motion for EKF testing
 u0 = 25.0 # [m/s]
 w0 = 2.0 # [m/s]
-u_truth = u0 * np.ones(nt) + 0.0 / Tsim * np.linspace(t0,Tsim,nt)
+u_truth = u0 * np.ones(nt) + 1.0 / Tsim * np.linspace(t0,Tsim,nt)
 v_truth = np.zeros(nt)
-w_truth = w0 * np.ones(nt) - 0.0 / Tsim * np.linspace(t0,Tsim,nt)
+w_truth = w0 * np.ones(nt) - 0.25 / Tsim * np.linspace(t0,Tsim,nt)
 
 p_truth = np.deg2rad(5.0) * np.sin(0.25*time)
 q_truth = -np.deg2rad(3.0) * np.sin(0.5*time)
@@ -69,11 +69,11 @@ z_gyro_meas = np.zeros(nt)
     #   Initialize EKF Estimation
 ####################################################
 
-# random_init = np.deg2rad(3.0) * np.random.uniform((2,1))
+random_init = np.deg2rad(3.0) * np.random.uniform((2,1))
 # random_init = np.deg2rad(np.array([0.0, 5.0]))
-x_hat_pred = np.array([phi0, theta0]) # + random_init 
+x_hat_pred = np.array([phi0, theta0]) + random_init 
 P_pred = np.eye(2)
-x_hat_upd = np.array([phi0, theta0]) # + random_init 
+x_hat_upd = np.array([phi0, theta0]) + random_init 
 P_upd = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
@@ -129,7 +129,8 @@ for i in range(nt):
 
     # Run EKF step
     y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_pred, P_pred, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    # x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
 
     x_hat_pred_log[i] = x_hat_pred
     P_pred_log[i] = P_pred
@@ -228,7 +229,7 @@ plt.suptitle('Attitude EKF Test')
 
 
 ####################################################
-    #   Plot Attitude (TODO: Estimation)
+    #   Plot Truth vs. Estimated Attitude
 ####################################################
 
 _, axs = plt.subplots(2,2)
@@ -270,5 +271,46 @@ axs[1,1].set_title(r'$\dot{\theta}$')
 axs[1,1].legend()
 
 plt.suptitle('Attitude EKF Test')
+
+####################################################
+    #  Plot Covariance
+####################################################
+
+_, axs = plt.subplots(2,2)
+
+axs[0,0].plot(time, P_pred_log[:,0,0], label='Predict')
+axs[0,0].plot(time, P_upd_log[:,0,0], label='Update')
+axs[0,0].grid(True)
+# axs[0,0].set_xlabel('Time [s]')
+# axs[0,0].set_ylabel('[rad]')
+# axs[0,0].set_ylabel('[deg]')
+axs[0,0].set_title(r'$P(1,1)$')
+axs[0,0].legend()
+
+axs[1,0].plot(time, np.rad2deg(phi_dot_truth), label='Truth')
+axs[1,0].grid(True)
+axs[1,0].set_xlabel('Time [s]')
+# axs[1,0].set_ylabel('[rad/s]')
+# axs[1,0].set_ylabel('[deg/s]')
+axs[1,0].set_title(r'$P(2,1)$')
+axs[1,0].legend()
+
+axs[0,1].plot(time, np.rad2deg(theta_truth), label='Truth')
+axs[0,1].grid(True)
+# axs[0,1].set_xlabel('Time [s]')
+# axs[0,1].set_ylabel('[rad]')
+# axs[0,1].set_ylabel('[deg]')
+axs[0,1].set_title(r'$P(1,2)$')
+axs[0,1].legend()
+
+axs[1,1].plot(time, np.rad2deg(theta_dot_truth), label='Truth')
+axs[1,1].grid(True)
+axs[1,1].set_xlabel('Time [s]')
+# axs[1,1].set_ylabel('[rad/s]')
+# axs[1,1].set_ylabel('[deg/s]')
+axs[1,1].set_title(r'$P(2,2)$')
+axs[1,1].legend()
+
+plt.suptitle(r'$P_{pred}$ vs. $P_{upd}$')
 
 plt.show()
