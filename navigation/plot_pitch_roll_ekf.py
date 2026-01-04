@@ -70,13 +70,17 @@ z_gyro_meas = np.zeros(nt)
 
 # random_init = np.deg2rad(3.0) * np.random.uniform((2,1))
 # random_init = np.deg2rad(np.array([0.0, 5.0]))
-x_hat = np.array([phi0, theta0]) # + random_init 
-P_hat = np.eye(2)
+x_hat_pred = np.array([phi0, theta0]) # + random_init 
+P_pred = np.eye(2)
+x_hat_upd = np.array([phi0, theta0]) # + random_init 
+P_upd = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
 
-x_hat_log = np.zeros((nt, 2))
-P_log = np.zeros((nt, 2, 2))
+x_hat_pred_log = np.zeros((nt, 2))
+P_pred_log = np.zeros((nt, 2, 2))
+x_hat_upd_log = np.zeros((nt, 2))
+P_upd_log = np.zeros((nt, 2, 2))
 
 ####################################################
     #   Run Simulation of Sensor Models
@@ -122,10 +126,12 @@ for i in range(nt):
 
     # Run EKF step
     y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    x_hat, P_hat = ekf.ekf_step(x_hat, P_hat, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    x_hat_pred, P_pred, x_hat_upd, P_upd = ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
 
-    x_hat_log[i] = x_hat
-    P_log[i] = P_hat
+    x_hat_pred_log[i] = x_hat_pred
+    P_pred_log[i] = P_pred
+    x_hat_upd_log[i] = x_hat_upd
+    P_upd_log[i] = P_upd
 
     if i < (nt-1): # propagate truth motion
         phi_truth[i+1] = phi_truth[i] + phi_dot * dt
@@ -225,7 +231,8 @@ plt.suptitle('Attitude EKF Test')
 _, axs = plt.subplots(2,2)
 
 axs[0,0].plot(time, np.rad2deg(phi_truth), label='Truth')
-axs[0,0].plot(time, np.rad2deg(x_hat_log[:,0]), label='Estimation', linestyle=':')
+axs[0,0].plot(time, np.rad2deg(x_hat_pred_log[:,0]), label='Predict', linestyle=':')
+axs[0,0].plot(time, np.rad2deg(x_hat_upd_log[:,0]), label='Update', linestyle='--')
 axs[0,0].grid(True)
 # axs[0,0].set_xlabel('Time [s]')
 # axs[0,0].set_ylabel('[rad]')
@@ -242,7 +249,8 @@ axs[1,0].set_title(r'$\dot{\phi}$')
 axs[1,0].legend()
 
 axs[0,1].plot(time, np.rad2deg(theta_truth), label='Truth')
-axs[0,1].plot(time, np.rad2deg(x_hat_log[:,1]), label='Estimation', linestyle=':')
+axs[0,1].plot(time, np.rad2deg(x_hat_pred_log[:,1]), label='Predict', linestyle=':')
+axs[0,1].plot(time, np.rad2deg(x_hat_upd_log[:,1]), label='Update', linestyle='--')
 axs[0,1].grid(True)
 # axs[0,1].set_xlabel('Time [s]')
 # axs[0,1].set_ylabel('[rad]')
