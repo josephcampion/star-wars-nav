@@ -119,7 +119,8 @@ class PitchRollEKF:
                     #   EKF Algo
     ####################################################
 
-    def predict(self,x_hat, P, Q, u, T_out, N=1):
+    def predict(self,x_hat, P, u, T_out, N=1):
+        Q = self._Q
         dt_step = T_out / N
         for _ in range(N):
             x_hat = x_hat + dt_step * self.get_x_dot(x_hat, u)
@@ -127,7 +128,8 @@ class PitchRollEKF:
             P = P + dt_step * (A @ P + P @ A.T + Q)
         return x_hat, P
 
-    def update(self, x_hat_pred, P_pred, R, u, y_meas):
+    def update(self, x_hat_pred, P_pred, u, y_meas):
+        R = self._R
         C = self.get_J_dh_dx(x_hat_pred, u)
         L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
         y_est = self.get_y_accel_est(x_hat_pred, u)
@@ -135,9 +137,9 @@ class PitchRollEKF:
         P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
         return x_hat_upd, P_upd
 
-    def ekf_step(self, x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
-        x_hat_pred, P_pred = self.predict(x_hat, P_hat, Q, u, T_out, N=N)
-        x_hat_upd, P_upd = self.update(x_hat_pred, P_pred, R, u, y_meas)
+    def ekf_step(self, x_hat, P_hat, u, y_meas, T_out, N=1):
+        x_hat_pred, P_pred = self.predict(x_hat, P_hat, u, T_out, N=N)
+        x_hat_upd, P_upd = self.update(x_hat_pred, P_pred, u, y_meas)
         return x_hat_pred, P_pred, x_hat_upd, P_upd
 
 ####################################################

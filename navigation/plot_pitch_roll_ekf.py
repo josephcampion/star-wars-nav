@@ -134,8 +134,8 @@ for i in range(nt):
 
     # Run EKF step
     y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    # x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_pred, P_pred, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
-    x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    # x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_pred, P_pred, np.array([Va, p, q, r]), y_accel_meas, dt)
+    x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_upd, P_upd, np.array([Va, p, q, r]), y_accel_meas, dt)
 
     x_hat_pred_log[i] = x_hat_pred
     P_pred_log[i] = P_pred
