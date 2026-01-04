@@ -10,9 +10,12 @@ GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
 class PitchRollEKF:
     # x = [phi, theta]^T
     # u = [Va, p, q, r]^T
-    def __init__(self, Q, R, x0=np.array([0.0, 0.0]), u0=np.array([0.0, 0.0, 0.0, 0.0])):
+    def __init__(self, Q, R, T_out, N=1, x0=np.array([0.0, 0.0]), u0=np.array([0.0, 0.0, 0.0, 0.0])):
         self._Q = Q
         self._R = R
+        self._T_out = T_out
+        self._N = N
+        self._dt_step = T_out / N
         self._x_hat = x0
         self._P_hat = np.eye(2)
         self._x_hat_pred = x0.copy() # is copy necessary?
@@ -119,10 +122,10 @@ class PitchRollEKF:
                     #   EKF Algo
     ####################################################
 
-    def predict(self,x_hat, P, u, T_out, N=1):
+    def predict(self,x_hat, P, u):
         Q = self._Q
-        dt_step = T_out / N
-        for _ in range(N):
+        dt_step = self._dt_step
+        for _ in range(self._N):
             x_hat = x_hat + dt_step * self.get_x_dot(x_hat, u)
             A = self.get_J_df_dx(x_hat, u)
             P = P + dt_step * (A @ P + P @ A.T + Q)
@@ -137,8 +140,8 @@ class PitchRollEKF:
         P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
         return x_hat_upd, P_upd
 
-    def ekf_step(self, x_hat, P_hat, u, y_meas, T_out, N=1):
-        x_hat_pred, P_pred = self.predict(x_hat, P_hat, u, T_out, N=N)
+    def ekf_step(self, x_hat, P_hat, u, y_meas):
+        x_hat_pred, P_pred = self.predict(x_hat, P_hat, u)
         x_hat_upd, P_upd = self.update(x_hat_pred, P_pred, u, y_meas)
         return x_hat_pred, P_pred, x_hat_upd, P_upd
 
