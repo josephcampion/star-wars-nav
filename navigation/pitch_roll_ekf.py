@@ -4,123 +4,140 @@ import numpy as np
 
 GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
 
-####################################################
-#   Kinematics (TODO: Re-use kin and model.sensors)
-####################################################
+# TODO: Make generic EKF class where dynamics 
+# and sensor models are passed in as arguments.
 
-# f(x,u)
-# x = [phi, theta]^T
-# u = [Va, p, q, r]^T
-def get_x_dot(x, u):
-    phi, theta = x
-    _, p, q, r = u
+class PitchRollEKF:
+    # x = [phi, theta]^T
+    # u = [Va, p, q, r]^T
+    def __init__(self, Q, R):
+        self._Q = Q
+        self._R = R
+        self._x_hat = np.array([0.0, 0.0])
+        self._P_hat = np.eye(2)
+        self._x_hat_pred = np.array([0.0, 0.0])
+        self._P_pred = np.eye(2)
+        self._x_hat_upd = np.array([0.0, 0.0])
+        self._P_upd = np.eye(2)
 
-    sp = np.sin(phi)
-    cp = np.cos(phi)
-    tt = np.tan(theta)
-    
-    phi_dot = p + q * sp * tt + r * cp * tt
-    theta_dot = q * cp - r * sp
-    
-    return np.array([phi_dot, theta_dot])
+    ####################################################
+    #   Dynamics (really kinematics) and Sensor Models
+    ####################################################
 
-# TODO: Make a unit test for this (vs. kinematics for no winds case).
-# h(x,u)
-# x = [phi, theta]^T
-# u = [Va, p, q, r]^T
-def get_y_accel_est(x, u):
-    phi, theta = x
-    Va, p, q, r = u
-    g = GRAV_ACCEL_MPS2
+    # f(x,u)
+    # x = [phi, theta]^T
+    # u = [Va, p, q, r]^T
+    def get_x_dot(self,x, u):
+        phi, theta = x
+        _, p, q, r = u
 
-    st = np.sin(theta)
-    ct = np.cos(theta)
-    sp = np.sin(phi)
-    cp = np.cos(phi)
+        sp = np.sin(phi)
+        cp = np.cos(phi)
+        tt = np.tan(theta)
+        
+        phi_dot = p + q * sp * tt + r * cp * tt
+        theta_dot = q * cp - r * sp
+        
+        # TODO: Store x_dot in class?
+        return np.array([phi_dot, theta_dot])
 
-    y_accel_x_est = q * Va * st + g * st
-    y_accel_y_est = r * Va * ct - p * Va * st - g * ct * sp
-    y_accel_z_est = -q * Va * ct - g * ct * cp
+    # h(x,u)
+    # x = [phi, theta]^T
+    # u = [Va, p, q, r]^T
+    def get_y_accel_est(self, x, u):
+        phi, theta = x
+        Va, p, q, r = u
+        g = GRAV_ACCEL_MPS2
 
-    return np.array([y_accel_x_est, y_accel_y_est, y_accel_z_est])
+        st = np.sin(theta)
+        ct = np.cos(theta)
+        sp = np.sin(phi)
+        cp = np.cos(phi)
 
+        y_accel_x_est = q * Va * st + g * st
+        y_accel_y_est = r * Va * ct - p * Va * st - g * ct * sp
+        y_accel_z_est = -q * Va * ct - g * ct * cp
 
-####################################################
-            #   Jacobians for EKF
-####################################################
-
-def get_J_df_dx(x, u):
-
-    phi, theta = x
-    _, p, q, r = u
-
-    cp = np.cos(phi)
-    sp = np.sin(phi)
-    tt = np.tan(theta)
-    ct = np.cos(theta)
-
-    dphi_dot_dphi = q * cp * tt - r * sp * tt
-    # TODO: Figure out why textbook has -r*cp instead.
-    dphi_dot_dtheta = (q * sp + r * cp) / (ct**2)
-    dtheta_dot_dphi = -q * sp - r * cp
-    dtheta_dot_dtheta = 0.0
-
-    return np.array([
-        [dphi_dot_dphi, dphi_dot_dtheta],
-        [dtheta_dot_dphi,dtheta_dot_dtheta]
-    ])
-
-def get_J_dh_dx(x, u):
-    phi, theta = x
-    Va, p, q, r = u
-    g = 9.81 # [m/s^2]
-
-    cp = np.cos(phi)
-    sp = np.sin(phi)
-    ct = np.cos(theta)
-    st = np.sin(theta)
-
-    dax_sens_dphi = 0.0
-    dax_sens_dtheta = -g * ct * cp
-    day_sens_dphi = g * ct * sp
-    day_sens_dtheta = q * Va * ct + g * ct
-    daz_sens_dphi = -r * Va * st - p * Va * ct + g * st * sp
-    daz_sens_dtheta = (q * Va + g * cp) * st
-
-    return np.array([
-        [dax_sens_dphi, dax_sens_dtheta],
-        [day_sens_dphi, day_sens_dtheta],
-        [daz_sens_dphi, daz_sens_dtheta],
-    ])
+        # TODO: Store output y in class?
+        return np.array([y_accel_x_est, y_accel_y_est, y_accel_z_est])
 
 
-####################################################
-                #   EKF Algo
-####################################################
+    ####################################################
+                #   Jacobians for EKF
+    ####################################################
 
-def ekf_predict(x_hat, P_hat, Q, u, T_out, N=1):
-    dt_step = T_out / N
-    for i in range(N):
-        x_hat_pred = x_hat + dt_step * get_x_dot(x_hat, u)
-        A = get_J_df_dx(x_hat, u)
-        P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
-    return x_hat_pred, P_pred
+    def get_J_df_dx(self, x, u):
 
-def ekf_update(x_hat_pred, P_pred, R, u, y_meas):
-    C = get_J_dh_dx(x_hat_pred, u)
-    L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
-    y_est = get_y_accel_est(x_hat_pred, u)
-    x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
-    P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
-    return x_hat_upd, P_upd
+        phi, theta = x
+        _, p, q, r = u
 
-def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
+        cp = np.cos(phi)
+        sp = np.sin(phi)
+        tt = np.tan(theta)
+        ct = np.cos(theta)
 
-    x_hat_pred, P_pred = ekf_predict(x_hat, P_hat, Q, u, T_out, N)
-    
-    x_hat_upd, P_upd = ekf_update(x_hat_pred, P_pred, R, u, y_meas)
+        dphi_dot_dphi = q * cp * tt - r * sp * tt
+        # TODO: Figure out why textbook has -r*cp instead.
+        dphi_dot_dtheta = (q * sp + r * cp) / (ct**2)
+        dtheta_dot_dphi = -q * sp - r * cp
+        dtheta_dot_dtheta = 0.0
 
-    return x_hat_pred, P_pred, x_hat_upd, P_upd
+        return np.array([
+            [dphi_dot_dphi, dphi_dot_dtheta],
+            [dtheta_dot_dphi,dtheta_dot_dtheta]
+        ])
+
+    def get_J_dh_dx(self, x, u):
+        phi, theta = x
+        Va, p, q, r = u
+        g = GRAV_ACCEL_MPS2
+
+        cp = np.cos(phi)
+        sp = np.sin(phi)
+        ct = np.cos(theta)
+        st = np.sin(theta)
+
+        dax_sens_dphi = 0.0
+        dax_sens_dtheta = -g * ct * cp
+        day_sens_dphi = g * ct * sp
+        day_sens_dtheta = q * Va * ct + g * ct
+        daz_sens_dphi = -r * Va * st - p * Va * ct + g * st * sp
+        daz_sens_dtheta = (q * Va + g * cp) * st
+
+        return np.array([
+            [dax_sens_dphi, dax_sens_dtheta],
+            [day_sens_dphi, day_sens_dtheta],
+            [daz_sens_dphi, daz_sens_dtheta],
+        ])
+
+
+    ####################################################
+                    #   EKF Algo
+    ####################################################
+
+    def ekf_predict(self,x_hat, P_hat, Q, u, T_out, N=1):
+        dt_step = T_out / N
+        for i in range(N):
+            x_hat_pred = x_hat + dt_step * self.get_x_dot(x_hat, u)
+            A = self.get_J_df_dx(x_hat, u)
+            P_pred = P_hat + dt_step * (A @ P_hat + P_hat @ A.T + Q)
+        return x_hat_pred, P_pred
+
+    def ekf_update(self, x_hat_pred, P_pred, R, u, y_meas):
+        C = self.get_J_dh_dx(x_hat_pred, u)
+        L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
+        y_est = self.get_y_accel_est(x_hat_pred, u)
+        x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
+        P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
+        return x_hat_upd, P_upd
+
+    def ekf_step(self, x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
+
+        x_hat_pred, P_pred = self.ekf_predict(x_hat, P_hat, Q, u, T_out, N)
+        
+        x_hat_upd, P_upd = self.ekf_update(x_hat_pred, P_pred, R, u, y_meas)
+
+        return x_hat_pred, P_pred, x_hat_upd, P_upd
 
 ####################################################
         #   Unused Helper Functions

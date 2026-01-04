@@ -4,6 +4,17 @@ import numpy as np
 import navigation.pitch_roll_ekf as ekf
 from models.sensors import get_y_accel_meas
 
+# Initialize EKF
+phi0 = np.deg2rad(10.0)
+theta0 = np.deg2rad(10.0)
+x_hat_pred = np.array([phi0, theta0]) # + random_init 
+P_pred = np.eye(2)
+x_hat_upd = np.array([phi0, theta0]) # + random_init 
+P_upd = np.eye(2)
+Q = np.eye(2) * 1.e-4
+R = np.eye(3) * 1.e-2
+ekf = ekf.PitchRollEKF(Q, R)
+
 def test_get_y_accel_meas():
 
     # x = [u, v, w, phi, theta, p, q, r]

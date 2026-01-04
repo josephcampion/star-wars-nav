@@ -77,6 +77,7 @@ x_hat_upd = np.array([phi0, theta0]) # + random_init
 P_upd = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
+pr_ekf = ekf.PitchRollEKF(Q, R)
 
 x_hat_pred_log = np.zeros((nt, 2))
 P_pred_log = np.zeros((nt, 2, 2))
@@ -97,10 +98,10 @@ for i in range(nt):
     Va = np.sqrt(u**2 + v**2 + w**2)
 
     A_rpy_dot_to_pqr = rt.get_pqr_to_rpy_dot(phi, theta)
-    rpy_dot = A_rpy_dot_to_pqr @ np.array([p, q, r])
+    phi_dot, theta_dot, _ = A_rpy_dot_to_pqr @ np.array([p, q, r])
 
-    phi_dot_truth[i] = rpy_dot[0]
-    theta_dot_truth[i] = rpy_dot[1]
+    phi_dot_truth[i] = phi_dot
+    theta_dot_truth[i] = theta_dot
 
     # Get sensor measurements
     x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])
@@ -128,7 +129,7 @@ for i in range(nt):
 
     # Run EKF step
     y_accel_meas = np.array([y_accel_x_meas[i], y_accel_y_meas[i], y_accel_z_meas[i]])
-    x_hat_pred, P_pred, x_hat_upd, P_upd = ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
+    x_hat_pred, P_pred, x_hat_upd, P_upd = pr_ekf.ekf_step(x_hat_upd, P_upd, Q, R, np.array([Va, p, q, r]), y_accel_meas, dt)
 
     x_hat_pred_log[i] = x_hat_pred
     P_pred_log[i] = P_pred
