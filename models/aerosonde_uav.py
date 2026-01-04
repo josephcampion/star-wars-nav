@@ -2,7 +2,6 @@
 import numpy as np
 from numpy.random import beta
 
-
 ###################################################
             #   Mass Properties
 ###################################################
@@ -23,10 +22,10 @@ c = 0.18994 # [m]
 #--------------------- Engine --------------------#
 # TODO: Figure out what all these are...
 S_prop = 0.2027 # [m^2]
-rho = 1.2682 # [kg*m^3] # TODO: Make this a function of altitude?
+rho = 1.2682 # [kg/m^3] # TODO: Make this a function of altitude?
 k_motor = 80.0 # [-]
-k_T_p = 0 # [-]
-k_Omega = 0.0 # [-]
+k_T_p = 0.1 # [-]
+k_Omega = 0.0 # 0.1 # [-]
 e = 0.9 # [-]
 
 ###################################################
@@ -158,9 +157,9 @@ B_lon = np.array([
 # Lateral state-space matrix components
 Y_v = -0.5
 # print("Y_v = ", Y_v)
-Y_v = (rho * S * b * v_0 / (4 * m * V_a_0)) * (C_Y_p * p_0 + C_Y_r * r_0) + \
-    (rho * S * v_0 / m) * (C_Y_0 + C_Y_beta * beta_0 + C_Y_delta_a * delta_a_0 + C_Y_delta_r * delta_r_0) + \
-        (rho * S * C_Y_beta / (2 * m)) * V_a_0 # or np.sqrt(u_0**2 + w_0**2)
+# Y_v = (rho * S * b * v_0 / (4 * m * V_a_0)) * (C_Y_p * p_0 + C_Y_r * r_0) + \
+#     (rho * S * v_0 / m) * (C_Y_0 + C_Y_beta * beta_0 + C_Y_delta_a * delta_a_0 + C_Y_delta_r * delta_r_0) + \
+#         (rho * S * C_Y_beta / (2 * m)) * V_a_0 # or np.sqrt(u_0**2 + w_0**2)
 # Y_v = (rho * S * C_Y_beta / (2 * m)) * np.sqrt(u_0**2 + w_0**2)
 # print("Y_v = ", Y_v)
 Y_p = 0.0
@@ -168,11 +167,11 @@ Y_p = w_0 + ((rho * V_a_0 * S * b) / (4 * m)) * C_Y_p
 # print("Y_p = ", Y_p)
 # NOTE: I think this is so much bigger because it's v and not beta.
 Y_r = 1.0
-Y_r = -u_0 + ((rho * V_a_0 * S * b) / (4 * m)) * C_Y_r
-print("Y_r = ", Y_r)
+# Y_r = -u_0 + ((rho * V_a_0 * S * b) / (4 * m)) * C_Y_r
+# print("Y_r = ", Y_r)
 
 L_v = -0.1
-Lv = ((rho * S * b**2 * v_0) / (4 * V_a_0)) * (C_)
+# Lv = ((rho * S * b**2 * v_0) / (4 * V_a_0)) * (C_)
 L_p = -4.0 # roll damping
 L_r = 0.7 # di-hedral effect?
 

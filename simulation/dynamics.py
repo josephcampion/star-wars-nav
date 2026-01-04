@@ -1,6 +1,12 @@
 
 
-# import numpy as np
+import numpy as np
+from models.vehicle import Vehicle
+import models.aerodynamics as aero
+import simulation.rotations as rt
+
+# TODO: Move this to common constants file.
+GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
 
 class LinearDynamics4x4:
     # xdot = A * x + B * u
@@ -18,34 +24,48 @@ class LinearDynamics4x4:
         
         return xdot # , y
 
-# TODO: Produce [fx, fy, fz]^T and [l, m, n]^T 
-# given control inputs and ambient conditions.
-class ForcesAndMoments:
-    def __init__(self, aero_coeffs, mass_props, engine_props):
-        pass
+# end LinearDynamics4x4
 
-    def get_aero_forces_and_moments(self):
-        pass
+def get_gravity_force(m, roll, pitch):
+    
+    DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, 0.0)
 
-    def get_gravitational_force(self):
-        pass
+    F_grav_ned = np.array([0.0, 0.0, m * GRAV_ACCEL_MPS2])
 
-    def get_propulsion_forces(self):
-        pass
+    F_grav_bod = DCM_ned2bod @ F_grav_ned
 
-def inertia_mat(Jx, Jy, Jz, Jxz):
-    return np.array([
-        [Jx,    0.0,    -Jxz],
-        [0.0,   Jy,     0.0],
-        [-Jxz,  0.0,    Jz]
-    ])
+    return F_grav_bod
 
-def inertia_mat_inv(Jx, Jy, Jz, Jxz):
+# TODO: Move this to dynamics? And pass in 'vehicle' class to that?
+def get_forces_and_moments(vehicle, state, control):
+    m = vehicle._mass_props.get_mass()
+    S = vehicle._S
+    c = vehicle._c
+    b = vehicle._b
+    rho = vehicle._rho
 
-    gamma = Jz*Jz - Jxz**2
+    # p_ned = state[0:3]
+    u, v, w = state[3:6]
+    rpy = state[6:9]
+    pqr = state[9:12]
 
-    return np.array([
-        [Jz/gamma,  0.0,    Jxz/gamma],
-        [0.0,       1/Jy,   0.0],
-        [Jxz/gamma, 0.0,    Jx/gamma]
-    ])
+    # TODO: Calculate this as part of method in 'state' class.
+    Va = aero.get_Va(u, v, w)
+    alpha = aero.get_alpha(u, v, w)
+    beta = aero.get_beta(u, v, w)
+    # print("alpha = ", alpha)
+    # print("beta = ", beta)
+    # print("Va = ", Va)
+
+    delta_t = control[1]
+
+    F_aero, M_aero = vehicle.get_aero_forces_and_moments(alpha, beta, Va, pqr, control, rho, S, c, b)
+    F_prop, M_prop = vehicle.get_prop_force_and_moment(Va, delta_t)
+    F_grav = get_gravity_force(m, rpy[0], rpy[1])
+    # print("F_grav = ", F_grav)
+    # print("F_aero = ", F_aero)
+    # print("F_prop = ", F_prop)
+    # print("M_aero = ", M_aero)
+    # print("M_prop = ", M_prop)
+
+    return F_aero + F_prop + F_grav, M_aero + M_prop

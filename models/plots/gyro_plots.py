@@ -1,7 +1,8 @@
 
-import sensors
 import numpy as np
 import matplotlib.pyplot as plt
+
+from models.sensors import Gyroscope
 
 ####################################################
     #   Initialize Simulation Parameters
@@ -28,9 +29,9 @@ z_gyro_meas = np.zeros(nt)
 ####################################################
 
 # Make sensor models
-x_gyro = sensors.Gyroscope(0.1, 0.1)
-y_gyro = sensors.Gyroscope(0.1, 0.1)
-z_gyro = sensors.Gyroscope(0.1, 0.1)
+x_gyro = Gyroscope(0.1, 0.1)
+y_gyro = Gyroscope(0.1, 0.1)
+z_gyro = Gyroscope(0.1, 0.1)
 
 for i in range(nt):
     x_gyro_meas[i] = x_gyro.get_sensor_data(p_truth[i])

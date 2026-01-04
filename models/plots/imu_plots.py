@@ -1,8 +1,8 @@
 
-import sensors
 import numpy as np
 import matplotlib.pyplot as plt
 
+from models.sensors import InertialMeasurementUnit
 
 ####################################################
     #   Initialize Simulation Parameters
@@ -45,7 +45,7 @@ z_accel_meas = np.zeros(nt)
 ####################################################
 
 # Make sensor models
-imu = sensors.InertialMeasurementUnit(0.1, 0.1, 0.05, 0.2)
+imu = InertialMeasurementUnit(0.1, 0.1, 0.05, 0.2)
 
 for i in range(nt):
     ang_vel_truth = [

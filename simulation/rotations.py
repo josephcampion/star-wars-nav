@@ -34,3 +34,17 @@ def rot(angle_rad, axis):
 def get_dcm_ned2bod(roll, pitch, yaw):
     return rot(roll, 0) @ rot(pitch, 1) @ rot(yaw, 2)
 
+def get_pqr_to_rpy_dot(roll, pitch):
+
+    cr = np.cos(roll)
+    sr = np.sin(roll)
+
+    cp = np.cos(pitch)
+    tp = np.tan(pitch)
+
+    return np.array([
+        [1.0,   sr * tp,    cr * tp],
+        [0.0,   cr,         -sr],
+        [0.0,   sr / cp,    cr / cp]
+    ])
+
