@@ -1,7 +1,7 @@
 
 import numpy as np
 
-import navigation.pitch_roll_ekf as ekf
+from navigation.pitch_roll_ekf import PitchRollEKF, GRAV_ACCEL_MPS2
 from models.sensors import get_y_accel_meas
 
 # Initialize EKF
@@ -13,7 +13,7 @@ x_hat_upd = np.array([phi0, theta0]) # + random_init
 P_upd = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
-ekf = ekf.PitchRollEKF(Q, R)
+ekf = PitchRollEKF(Q, R)
 
 def test_get_y_accel_meas():
 
@@ -28,7 +28,7 @@ def test_get_y_accel_meas():
 
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
-    assert np.isclose(y_accel_meas[2], -ekf.GRAV_ACCEL_MPS2, 1.0e-6)
+    assert np.isclose(y_accel_meas[2], -GRAV_ACCEL_MPS2, 1.0e-6)
 
     #--------------- No motion, pitched nose up. ---------------#
     x = np.array([0.0, 0.0, 0.0, 0.0, np.deg2rad(45.0), 0.0, 0.0, 0.0])
@@ -36,7 +36,7 @@ def test_get_y_accel_meas():
 
     y_accel_meas = get_y_accel_meas(x, xdot)
 
-    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    ans = GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_meas[0], ans, 1.0e-6)
     assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
@@ -47,7 +47,7 @@ def test_get_y_accel_meas():
 
     y_accel_meas = get_y_accel_meas(x, xdot)
 
-    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    ans = GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], -ans, 1.0e-6)
     assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
@@ -59,7 +59,7 @@ def test_get_y_accel_meas():
 
     y_accel_meas = get_y_accel_meas(x, xdot)
 
-    ans = ekf.GRAV_ACCEL_MPS2
+    ans = GRAV_ACCEL_MPS2
     assert np.isclose(y_accel_meas[0], udot_ans, 1.0e-6)
     assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
@@ -70,7 +70,7 @@ def test_get_y_accel_meas():
     xdot = np.array([0.0, vdot_ans, 0.0])
 
     y_accel_meas = get_y_accel_meas(x, xdot)
-    ans = ekf.GRAV_ACCEL_MPS2
+    ans = GRAV_ACCEL_MPS2
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], vdot_ans, 1.0e-6)
     assert np.isclose(y_accel_meas[2], -ans, 1.0e-6)
@@ -91,7 +91,7 @@ def test_get_y_accel_est():
 
     assert np.isclose(y_accel_est[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_est[1], 0.0, 1.0e-6)
-    assert np.isclose(y_accel_est[2], -ekf.GRAV_ACCEL_MPS2, 1.0e-6)
+    assert np.isclose(y_accel_est[2], -GRAV_ACCEL_MPS2, 1.0e-6)
 
     #--------------- No motion, pitched nose up. ---------------#
     x = np.array([0.0, np.deg2rad(45.0)])
@@ -99,7 +99,7 @@ def test_get_y_accel_est():
 
     y_accel_est = ekf.get_y_accel_est(x, u)
 
-    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    ans = GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_est[0], ans, 1.0e-6)
     assert np.isclose(y_accel_est[1], 0.0, 1.0e-6)
     assert np.isclose(y_accel_est[2], -ans, 1.0e-6)
@@ -110,7 +110,7 @@ def test_get_y_accel_est():
 
     y_accel_est = ekf.get_y_accel_est(x, u)
 
-    ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
+    ans = GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_est[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_est[1], -ans, 1.0e-6)
     assert np.isclose(y_accel_est[2], -ans, 1.0e-6)
