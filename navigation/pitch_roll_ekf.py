@@ -19,6 +19,8 @@ class PitchRollEKF:
         self._P_pred = np.eye(2)
         self._x_hat_upd = np.array([0.0, 0.0])
         self._P_upd = np.eye(2)
+        # TODO: Store fields you want to log.
+
 
     ####################################################
     #   Dynamics (really kinematics) and Sensor Models
@@ -98,10 +100,12 @@ class PitchRollEKF:
         st = np.sin(theta)
 
         dax_sens_dphi = 0.0
-        dax_sens_dtheta = -g * ct * cp
-        day_sens_dphi = g * ct * sp
-        day_sens_dtheta = q * Va * ct + g * ct
-        daz_sens_dphi = -r * Va * st - p * Va * ct + g * st * sp
+        dax_sens_dtheta = (q * Va + g) * ct
+
+        day_sens_dphi = -g * ct * cp
+        day_sens_dtheta = -r * Va * st - p * Va * ct + g * st * sp
+
+        daz_sens_dphi = g * ct * sp
         daz_sens_dtheta = (q * Va + g * cp) * st
 
         return np.array([
