@@ -13,7 +13,8 @@ x_hat_upd = x_hat_pred.copy()
 P_upd = P_pred.copy()
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
-ekf = PitchRollEKF(Q, R)
+T = 0.01 # seconds
+ekf = PitchRollEKF(Q, R, T)
 
 # TODO: Move this to test_sensors.py
 def test_get_y_accel_meas():

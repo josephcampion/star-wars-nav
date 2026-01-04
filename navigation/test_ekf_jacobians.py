@@ -12,7 +12,8 @@ x_hat_upd = np.array([phi0, theta0]) # + random_init
 P_upd = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2
-ekf = PitchRollEKF(Q, R)
+T = 0.01 # seconds
+ekf = PitchRollEKF(Q, R, T)
 
 
 def numerical_jacobian(f, x, u):
