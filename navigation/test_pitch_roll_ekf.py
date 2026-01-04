@@ -13,7 +13,7 @@ def test_get_y_accel_meas():
     x = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     xdot = np.array([0.0, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
 
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], 0.0, 1.0e-6)
@@ -23,7 +23,7 @@ def test_get_y_accel_meas():
     x = np.array([0.0, 0.0, 0.0, 0.0, np.deg2rad(45.0), 0.0, 0.0, 0.0])
     xdot = np.array([0.0, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
 
     ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_meas[0], ans, 1.0e-6)
@@ -34,7 +34,7 @@ def test_get_y_accel_meas():
     x = np.array([0.0, 0.0, 0.0, np.deg2rad(45.0), 0.0, 0.0, 0.0, 0.0])
     xdot = np.array([0.0, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
 
     ans = ekf.GRAV_ACCEL_MPS2 * np.sqrt(2.0) / 2.0
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
@@ -46,7 +46,7 @@ def test_get_y_accel_meas():
     udot_ans = 10.0
     xdot = np.array([udot_ans, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
 
     ans = ekf.GRAV_ACCEL_MPS2
     assert np.isclose(y_accel_meas[0], udot_ans, 1.0e-6)
@@ -58,7 +58,7 @@ def test_get_y_accel_meas():
     vdot_ans = 10.0
     xdot = np.array([0.0, vdot_ans, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
     ans = ekf.GRAV_ACCEL_MPS2
     assert np.isclose(y_accel_meas[0], 0.0, 1.0e-6)
     assert np.isclose(y_accel_meas[1], vdot_ans, 1.0e-6)
@@ -122,7 +122,7 @@ def test_get_y_accel_est():
     # Estimator assumes udot = 0, vdot = 0, wdot = 0
     xdot = np.array([0.0, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
     # print("y_accel_meas =", y_accel_meas)
 
     assert np.isclose(y_accel_est[0], y_accel_meas[0], 1.0e-6)
@@ -147,7 +147,7 @@ def test_get_y_accel_est():
     # Estimator assumes udot = 0, vdot = 0, wdot = 0
     xdot = np.array([0.0, 0.0, 0.0])
 
-    y_accel_meas = ekf.get_y_accel_meas(x, xdot)
+    y_accel_meas = get_y_accel_meas(x, xdot)
     # print("y_accel_meas =", y_accel_meas)
 
     assert np.isclose(y_accel_est[0], y_accel_meas[0], 1.0e-6)
