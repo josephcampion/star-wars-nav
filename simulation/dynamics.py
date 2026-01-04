@@ -5,6 +5,9 @@ from models.vehicle import Vehicle
 import models.aerodynamics as aero
 import simulation.rotations as rt
 
+# TODO: Move this to common constants file.
+GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
+
 class LinearDynamics4x4:
     # xdot = A * x + B * u
     # y = C * x + D * u
@@ -24,8 +27,6 @@ class LinearDynamics4x4:
 # end LinearDynamics4x4
 
 def get_gravity_force(m, roll, pitch):
-
-    GRAV_ACCEL_MPS2 = 9.8067 # [m/s^2]
     
     DCM_ned2bod = rt.get_dcm_ned2bod(roll, pitch, 0.0)
 
