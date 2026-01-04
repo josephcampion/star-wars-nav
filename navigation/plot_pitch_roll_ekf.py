@@ -39,15 +39,15 @@ theta_dot_truth = np.zeros(nt)
 ####################################################
 
 # Make accelerometer sensor models
-accel_bias = 0.e-3
-accel_noise = 1.e-3
+accel_bias = 1.e-2
+accel_noise = 1.e-2
 x_accel = sens.Accelerometer(accel_bias, accel_noise)
 y_accel = sens.Accelerometer(accel_bias, accel_noise)
 z_accel = sens.Accelerometer(accel_bias, accel_noise)
 
 # Make gyroscope sensor models
-gyro_bias = 0.e-4
-gyro_noise = 1.e-4
+gyro_bias = 1.e-3
+gyro_noise = 1.e-3
 x_gyro = sens.Gyroscope(gyro_bias, gyro_noise)
 y_gyro = sens.Gyroscope(gyro_bias, gyro_noise)
 z_gyro = sens.Gyroscope(gyro_bias, gyro_noise)
@@ -68,7 +68,9 @@ z_gyro_meas = np.zeros(nt)
     #   Initialize EKF Estimation
 ####################################################
 
-x_hat = np.array([phi0, theta0]) # + 0.1 * np.random.uniform((2,1))
+# random_init = np.deg2rad(3.0) * np.random.uniform((2,1))
+# random_init = np.deg2rad(np.array([0.0, 5.0]))
+x_hat = np.array([phi0, theta0]) # + random_init 
 P_hat = np.eye(2)
 Q = np.eye(2) * 1.e-4
 R = np.eye(3) * 1.e-2

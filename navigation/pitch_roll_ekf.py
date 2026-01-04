@@ -142,5 +142,6 @@ def ekf_step(x_hat, P_hat, Q, R, u, y_meas, T_out, N=1):
     
     x_hat_upd, P_upd = ekf_update(x_hat_pred, P_pred, R, u, y_meas)
 
-    return x_hat_upd, P_upd
+    return x_hat_pred, P_pred
+    # return x_hat_upd, P_upd
 
