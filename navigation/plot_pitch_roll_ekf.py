@@ -6,7 +6,7 @@ import models.sensors as sens
 import simulation.rotations as rt
 import navigation.pitch_roll_ekf as ekf
 
-Tsim = 30.0 # seconds
+Tsim = 60.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
 

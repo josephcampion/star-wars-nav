@@ -136,7 +136,9 @@ class PitchRollEKF:
         C = self.get_J_dh_dx(x_hat_pred, u)
         L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
         y_est = self.get_y_accel_est(x_hat_pred, u)
-        x_hat_upd = x_hat_pred + L @ (y_meas - y_est)
+        y_err = y_meas - y_est
+        x_err = L @ y_err
+        x_hat_upd = x_hat_pred + x_err
         P_upd = (np.eye(len(x_hat_pred)) - L @ C) @ P_pred
         return x_hat_upd, P_upd
 
