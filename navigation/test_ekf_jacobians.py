@@ -16,80 +16,68 @@ T = 0.01 # seconds
 ekf = PitchRollEKF(Q, R, T)
 
 
-def numerical_jacobian(f, x, u):
+
+def test_J_df_dx():
+
+    x = np.array([0.3, 0.4]) # [phi, theta]^T
+    u = np.array([0.0, 0.1, 0.2, -0.3]) # [Va, p, q, r]^T
+
+    J_an = ekf.get_J_df_dx(x, u)
+    print("Analytic Jacobian:\n", J_an)
+
+    n = len(x)
     h = 1.0e-6
-    J = np.zeros((len(x), len(x)))
-    for i in range(len(x)):
+    J_num = np.zeros((n, n))
+    for i in range(n):
         x_i = x.copy()
         x_i[i] += h
-        J[:,i] = (f(x_i, u) - f(x, u)) / h
-    return J
+        f_of_x_i = ekf.get_x_dot(x_i, u)
+        f_of_x = ekf.get_x_dot(x, u)
+        print("f_of_x_i:\n", f_of_x_i)
+        print("f_of_x:\n", f_of_x)
+        J_num[:,i] = (f_of_x_i - f_of_x) / h
+        
+    print("Numerical Jacobian:\n", J_num)
+    print("Error:\n", J_num - J_an)
 
-def test_get_J_df_dx():
-    pass
+    assert np.isclose(J_num[0,0], J_an[0,0], 1.0e-6)
+    assert np.isclose(J_num[0,1], J_an[0,1], 1.0e-6)
+    assert np.isclose(J_num[1,0], J_an[1,0], 1.0e-6)
+    assert np.isclose(J_num[1,1], J_an[1,1], 1.0e-6)
 
-    # x = [u, v, w, phi, theta, p, q, r]
-    # xdot = [udot, vdot, wdot]
+    return
 
-    #--------------- Starboard acceleration (vdot>0). ---------------#
+def test_J_dh_dx():
     
-# """ 
-# From ChatGPT:
-# import numpy as np
+    x = np.array([0.3, 0.4]) # [phi, theta]^T
+    u = np.array([0.0, 0.1, 0.2, -0.3]) # [Va, p, q, r]^T
+    n = len(x)
+    l = 3 # len(y_accel_est)
 
-# def num_jacobian(f, x, u, eps=1e-6):
-#     y0 = f(x, u)
-#     J = np.zeros((2, 2))
+    J_an = ekf.get_J_dh_dx(x, u)
+    print("Analytic Jacobian:\n", J_an)
 
-#     for i in range(2):
-#         dx = np.zeros_like(x)
-#         dx[i] = eps
-#         y1 = f(x + dx, u)
-#         J[:, i] = (y1 - y0) / eps
+    h = 1.0e-6
+    J_num = np.zeros((l, n))
+    for i in range(n):
+        x_i = x.copy()
+        x_i[i] += h
+        h_of_x_i = ekf.get_y_accel_est(x_i, u)
+        h_of_x = ekf.get_y_accel_est(x, u)
+        print("h_of_x_i:\n", h_of_x_i)
+        print("h_of_x:\n", h_of_x)
+        print("J_num[:,i] = ", J_num[:,i])
+        J_num[:,i] = (h_of_x_i - h_of_x) / h
+        
 
-#     return J
+    print("Numerical Jacobian:\n", J_num)
+    print("Error:\n", J_num - J_an)
 
-# x = np.array([0.3, 0.4])
-# u = np.array([0.0, 0.1, 0.2, -0.3])
+    assert np.isclose(J_num[0,0], J_an[0,0], 1.0e-5)
+    assert np.isclose(J_num[0,1], J_an[0,1], 1.0e-5)
+    assert np.isclose(J_num[1,0], J_an[1,0], 1.0e-5)
+    assert np.isclose(J_num[1,1], J_an[1,1], 1.0e-5)
+    assert np.isclose(J_num[2,0], J_an[2,0], 1.0e-5)
+    assert np.isclose(J_num[2,1], J_an[2,1], 1.0e-5)
 
-# J_num = num_jacobian(self.get_x_dot, x, u)
-# J_an  = self.get_J_df_dx(x, u)
-
-# print("Numerical:\n", J_num)
-# print("Analytic:\n", J_an)
-# print("Error:\n", J_an - J_num)
-# """
-
-
-# def test_get_y_accel_est():
-
-#     # Compare with get_y_accel_meas (under conditions with no wind or acceleration).
-#     # Estimator assumes udot=vdot=wdot=0, alpha=theta, beta=0.
-
-#     # x = [phi, theta]^T
-#     # u = [Va, p, q, r]^T
-
-#     #--------------- Random motion. ---------------#
-#     phi = np.deg2rad(-5.0)
-#     theta = np.deg2rad(-10.0)
-#     p, q, r = 0.3, -0.1, -0.2
-#     Va = 40.0
-#     u = np.array([Va, p, q, r])
-#     x = np.array([phi, theta])
-#     y_accel_est = ekf.get_y_accel_est(x, u)
-#     # print("\ny_accel_est =", y_accel_est)
-
-#     # Estimator assumes u = Va*cos(theta), v = 0, w = Va*sin(theta)
-#     u = Va * np.cos(theta)
-#     v = 0.0
-#     w = Va * np.sin(theta)
-#     x = np.array([u, v, w, phi, theta, p, q, r])
-#     # Estimator assumes udot = 0, vdot = 0, wdot = 0
-#     xdot = np.array([0.0, 0.0, 0.0])
-
-#     y_accel_meas = get_y_accel_meas(x, xdot)
-#     # print("y_accel_meas =", y_accel_meas)
-
-#     assert np.isclose(y_accel_est[0], y_accel_meas[0], 1.0e-6)
-#     assert np.isclose(y_accel_est[1], y_accel_meas[1], 1.0e-6)
-#     assert np.isclose(y_accel_est[2], y_accel_meas[2], 1.0e-6)
+    return
