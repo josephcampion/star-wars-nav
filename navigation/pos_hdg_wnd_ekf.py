@@ -57,6 +57,26 @@ class PosHdgWndEKF:
         
         return np.array([pn_dot, pe_dot, vg_dot, chi_dot, wn_dot, we_dot, psi_dot])
 
+    # h(x,u)
+    # x = [pn, pe, vg, chi, wn, we, psi]^T
+    # u = [Va, q, r, phi, theta]^T
+    def get_y_gps_est(self, x, u):
+        pn, pe, vg, chi, wn, we, psi = x
+        va, q, r, phi, theta = u
+        g = GRAV_ACCEL_MPS2
+
+        cc = np.cos(chi)
+        sc = np.sin(chi)
+        cs = np.cos(psi)
+        ss = np.sin(psi)
+
+        # Pseudomeasurements for north and east wind speeds.
+        psuedo_meas_wn = va * cs + wn - vg * cc
+        psuedo_meas_we = va * ss + we - vg * sc
+
+        # TODO: Store output y in class?
+        return np.array([pn, pe, vg, chi,psuedo_meas_wn, psuedo_meas_we])
+
 
     ####################################################
                 #   Jacobians for EKF
@@ -103,30 +123,37 @@ class PosHdgWndEKF:
         return J_df_dx
 
     def get_J_dh_dx(self, x, u):
-        phi, theta = x
-        Va, p, q, r = u
+        pn, pe, vg, chi, wn, we, psi = x
+        va, q, r, phi, theta = u
         g = GRAV_ACCEL_MPS2
 
-        cp = np.cos(phi)
-        sp = np.sin(phi)
-        ct = np.cos(theta)
-        st = np.sin(theta)
+        cc = np.cos(chi)
+        sc = np.sin(chi)
+        cs = np.cos(psi) # cuz, ya know, "sigh"
+        ss = np.sin(psi)
 
-        dax_sens_dphi = 0.0
-        dax_sens_dtheta = (q * Va + g) * ct
+        J_dh_dx = np.zeros((6, len(x)))
 
-        day_sens_dphi = -g * ct * cp
-        day_sens_dtheta = -r * Va * st - p * Va * ct + g * st * sp
+        J_dh_dx[0,0] = 1.0
+        J_dh_dx[1,1] = 1.0
+        J_dh_dx[2,2] = 1.0
+        J_dh_dx[3,3] = 1.0
 
-        daz_sens_dphi = g * ct * sp
-        daz_sens_dtheta = (q * Va + g * cp) * st
+        # dpsuedo_meas_wn_dx
+        J_dh_dx[4,2] = -cc
+        J_dh_dx[4,3] = vg * sc
+        J_dh_dx[4,4] = 1.0
+        # J_dh_dx[4,5] = 0.0
+        J_dh_dx[4,6] = -va * ss
 
-        return np.array([
-            [dax_sens_dphi, dax_sens_dtheta],
-            [day_sens_dphi, day_sens_dtheta],
-            [daz_sens_dphi, daz_sens_dtheta],
-        ])
+        # dpsuedo_meas_we_dx
+        J_dh_dx[5,2] = -sc
+        J_dh_dx[5,3] = -vg * cc
+        # J_dh_dx[5,4] = 0.0
+        J_dh_dx[5,5] = 1.0
+        J_dh_dx[5,6] = va * cs
 
+        return J_dh_dx
 
     ####################################################
                     #   EKF Algo
