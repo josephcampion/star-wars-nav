@@ -167,135 +167,68 @@ def test_get_y_accel_est():
     assert np.isclose(y_accel_est[1], y_accel_meas[1], 1.0e-6)
     assert np.isclose(y_accel_est[2], y_accel_meas[2], 1.0e-6)
 
-def test_wrap_phi_and_theta():
-    pass
+
+def test_J_df_dx():
+
+    x = np.array([0.3, 0.4]) # [phi, theta]^T
+    u = np.array([0.0, 0.1, 0.2, -0.3]) # [Va, p, q, r]^T
+
+    J_an = ekf.get_J_df_dx(x, u)
+    print("\nAnalytic Jacobian:\n", J_an)
+
+    n = len(x)
+    h = 1.0e-6
+    J_num = np.zeros((n, n))
+    for i in range(n):
+        x_i = x.copy()
+        x_i[i] += h
+        f_of_x_i = ekf.get_x_dot(x_i, u)
+        f_of_x = ekf.get_x_dot(x, u)
+        print("f_of_x_i:\n", f_of_x_i)
+        print("f_of_x:\n", f_of_x)
+        J_num[:,i] = (f_of_x_i - f_of_x) / h
+        
+    print("Numerical Jacobian:\n", J_num)
+    print("Error:\n", J_num - J_an)
+
+    assert np.isclose(J_num[0,0], J_an[0,0], 1.0e-6)
+    assert np.isclose(J_num[0,1], J_an[0,1], 1.0e-6)
+    assert np.isclose(J_num[1,0], J_an[1,0], 1.0e-6)
+    assert np.isclose(J_num[1,1], J_an[1,1], 1.0e-6)
+
+    return
+
+def test_J_dh_dx():
     
+    x = np.array([0.3, 0.4]) # [phi, theta]^T
+    u = np.array([0.0, 0.1, 0.2, -0.3]) # [Va, p, q, r]^T
+    n = len(x)
+    l = 3 # len(y_accel_est)
 
+    J_an = ekf.get_J_dh_dx(x, u)
+    print("Analytic Jacobian:\n", J_an)
 
-# def test_get_vfpa():
+    h = 1.0e-6
+    J_num = np.zeros((l, n))
+    for i in range(n):
+        x_i = x.copy()
+        x_i[i] += h
+        h_of_x_i = ekf.get_y_accel_est(x_i, u)
+        h_of_x = ekf.get_y_accel_est(x, u)
+        print("h_of_x_i:\n", h_of_x_i)
+        print("h_of_x:\n", h_of_x)
+        print("J_num[:,i] = ", J_num[:,i])
+        J_num[:,i] = (h_of_x_i - h_of_x) / h
+        
 
-    # # Straight up (VFPA = 90.0)
-    # vN, vE, vD = 0.0, 0.0, -100.0 # positive z-axis is down
-    # v_ned = np.array([vN, vE, vD])
-    # vfpa = kin.get_vfpa(v_ned)
-    # assert vfpa == approx(np.deg2rad(90.0), abs=1.0e-6)
+    print("Numerical Jacobian:\n", J_num)
+    print("Error:\n", J_num - J_an)
 
-    # # Straight down (VFPA = -90.0)
-    # vN, vE, vD = 0.0, 0.0, 100.0 # positive z-axis is down
-    # v_ned = np.array([vN, vE, vD])
-    # vfpa = kin.get_vfpa(v_ned)
-    # assert np.isclose(vfpa, np.deg2rad(-90.0), 1.0e-6)
+    assert np.isclose(J_num[0,0], J_an[0,0], 1.0e-5)
+    assert np.isclose(J_num[0,1], J_an[0,1], 1.0e-5)
+    assert np.isclose(J_num[1,0], J_an[1,0], 1.0e-5)
+    assert np.isclose(J_num[1,1], J_an[1,1], 1.0e-5)
+    assert np.isclose(J_num[2,0], J_an[2,0], 1.0e-5)
+    assert np.isclose(J_num[2,1], J_an[2,1], 1.0e-5)
 
-    # # Make sure it returns NaN for zero velocity
-    # v_ned = np.array([0.0, 0.0, 0.0])
-    # vfpa = kin.get_vfpa(v_ned)
-    # assert np.isnan(vfpa)
-
-# def solve_f_equals_ma_explicit(x_vec, mass_props, F, M):
-
-#     u = x_vec[3]
-#     v = x_vec[4]
-#     w = x_vec[5]
-#     roll = x_vec[6]
-#     pitch = x_vec[7]
-#     yaw = x_vec[8]
-#     p = x_vec[9]
-#     q = x_vec[10]
-#     r = x_vec[11]
-
-#     m = mass_props.get_mass()
-#     J = mass_props.get_inertia_matrix()
-#     Jinv = mass_props.get_inertia_matrix_inv()
-#     gamma_vec = mass_props.get_gamma_vec()
-
-#     Jy = J[1,1]
-#     gamma = gamma_vec[0]
-#     gamma1 = gamma_vec[1]
-#     gamma2 = gamma_vec[2]
-#     gamma3 = gamma_vec[3]
-#     gamma4 = gamma_vec[4]
-#     gamma5 = gamma_vec[5]
-#     gamma6 = gamma_vec[6]
-#     gamma7 = gamma_vec[7]
-#     gamma8 = gamma_vec[8]
-
-#     cr = np.cos(roll)
-#     sr = np.sin(roll)
-#     cp = np.cos(pitch)
-#     sp = np.sin(pitch)
-#     tp = np.tan(pitch)
-#     cy = np.cos(yaw)
-#     sy = np.sin(yaw)
-
-#     pn_dot = cp*cy*u + (sr*sp*cy-cr*sy)*v + (cr*sp*cy+sr*sy)*w
-#     pe_dot = cp*sy*u + (sr*sp*sy+cr*cy)*v + (cr*sp*sy-sr*cy)*w
-#     pd_dot = -sp*u + sr*cp*v + cr*cp*w
-
-#     udot = F[0] / m - q*w + r*v
-#     vdot = F[1] / m - r*u + p*w
-#     wdot = F[2] / m - p*v + q*u
-
-#     roll_dot = p + (q*sr + r*cr)*tp
-#     pitch_dot = q*cr - r*sr
-#     yaw_dot = (q*sr + r*cr)/cp
-
-#     l, m, n = M
-
-#     pdot = gamma1 * p * q - gamma2 * q * r + gamma3 * l + gamma4 * n
-#     qdot = gamma5 * p * r - gamma6 * (p**2 - r**2) + m / Jy
-#     rdot = gamma7 * p * q - gamma1 * q * r + gamma4 * l + gamma8 * n
-
-#     return np.array([
-#         pn_dot, pe_dot, pd_dot,
-#         udot, vdot, wdot,
-#         roll_dot, pitch_dot, yaw_dot,
-#         pdot, qdot, rdot,
-#     ])
-
-# def test_solve_f_equals_ma():
-
-#     mass = 10.0
-#     Jx = 1.0
-#     Jy = 2.0
-#     Jz = 3.0
-#     Jxz = 4.0
-#     mass_props = mp.MassProperties(mass, Jx, Jy, Jz, Jxz)
-
-#     roll = np.deg2rad(5.0)
-#     pitch = np.deg2rad(10.0)
-
-#     u = 50.0 # [m/s]
-#     v = 10.0 # [m/s]
-#     w = -5.0 # [m/s]
-#     p = -0.3 # [rad/s]
-#     q = 0.2 # [rad/s]
-#     r = -0.1 # [rad/s]
-#     uvw = np.array([u, v, w])
-#     pqr = np.array([p, q, r])
-
-#     F = np.array([6.0, -7.0, 8.0])
-#     M = np.array([-11.0, 12.0, -13.0])
-
-
-#     x_vec = np.array([0.0, 0.0, 0.0, u, v, w, roll, pitch, 0.0, p, q, r])
-#     x_ac = kin.NonlinearKinematicState(x_vec)
-
-#     x_dot_explicit = solve_f_equals_ma_explicit(x_vec, mass_props, F, M)
-#     x_dot_implicit = x_ac.solve_f_equals_ma(mass_props, F, M)
-
-#     print("\nx_dot_implicit =\n", x_dot_implicit)
-#     print("x_dot_explicit =\n", x_dot_explicit)
-
-#     assert x_dot_implicit[0] == approx(x_dot_explicit[0], abs=1.0e-6)
-#     assert x_dot_implicit[1] == approx(x_dot_explicit[1], abs=1.0e-6)
-#     assert x_dot_implicit[2] == approx(x_dot_explicit[2], abs=1.0e-6)
-#     assert x_dot_implicit[3] == approx(x_dot_explicit[3], abs=1.0e-6)
-#     assert x_dot_implicit[4] == approx(x_dot_explicit[4], abs=1.0e-6)
-#     assert x_dot_implicit[5] == approx(x_dot_explicit[5], abs=1.0e-6)
-#     assert x_dot_implicit[6] == approx(x_dot_explicit[6], abs=1.0e-6)
-#     assert x_dot_implicit[7] == approx(x_dot_explicit[7], abs=1.0e-6)
-#     assert x_dot_implicit[8] == approx(x_dot_explicit[8], abs=1.0e-6)
-#     assert x_dot_implicit[9] == approx(x_dot_explicit[9], abs=1.0e-6)
-#     assert x_dot_implicit[10] == approx(x_dot_explicit[10], abs=1.0e-6)
-#     assert x_dot_implicit[11] == approx(x_dot_explicit[11], abs=1.0e-6)
-
+    return
