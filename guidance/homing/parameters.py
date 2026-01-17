@@ -6,7 +6,7 @@ Tsim = 30.0 # seconds
 dt = 0.1 # timestep
 t0 = 0.0
 
-Rtol = 10.0 # [m]
+Rtol = 2.0 # [m]
 
 ###################################################
             #   Initial Conditions

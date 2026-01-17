@@ -13,7 +13,7 @@ def homing_eom(x): #  u):
 
     x_t_dot = params.vt0 * np.cos(theta_t)
     y_t_dot = params.vt0 * np.sin(theta_t)
-    theta_t_dot = 0.0
+    theta_t_dot = np.deg2rad(2.5) # TODO: Add evasion guidance.
 
     x_m_dot = params.vm0 * np.cos(theta_m)
     y_m_dot = params.vm0 * np.sin(theta_m)
@@ -97,11 +97,14 @@ for i in range(nt):
     if i < (nt-1):
         x_log[i+1,:] = x_log[i,:] + xdot * params.dt
 
-        # TODO: Kill sim if range is within tolerance of target
+        # TODO: Stop sim if range is within tolerance
         if range_log[i] < params.Rtol:
             i_end = i
             print("Target reached.")
             break
+        else:
+            i_end = i
+
 
 ####################################################
 #                   Plot Results
