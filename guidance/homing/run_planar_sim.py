@@ -20,6 +20,16 @@ def homing_eom(x): #  u):
 
     return np.array([x_t_dot, y_t_dot, theta_t_dot, x_m_dot, y_m_dot, theta_m_dot])
 
+def get_los_angle(x):
+    x_t, y_t, _, x_m, y_m, _ = x
+    los_angle = np.arctan2(y_t - y_m, x_t - x_m)
+    return los_angle
+
+def get_range(x):
+    x_t, y_t, _, x_m, y_m, _ = x
+    range = np.hypot(x_t - x_m, y_t - y_m)
+    return range
+
 ####################################################
 #   Initialize Simulation
 ####################################################
@@ -36,9 +46,17 @@ nt = len(time)
 # Initialize vectors 
 
 xdim = [nt, 6]
-
+los_log = np.zeros(nt)
+range_log = np.zeros(nt)
 X = np.zeros(xdim)
-X[0,:] = np.array([params.x_t0, params.y_t0, params.theta_t0, params.x_m0, params.y_m0, params.theta_m0])
+X[0,:] = np.array([
+    params.x_t0,
+    params.y_t0,
+    params.theta_t0,
+    params.x_m0,
+    params.y_m0,
+    params.theta_m0,
+])
 Xdot = np.zeros(xdim)
 
 ####################################################
@@ -50,6 +68,9 @@ for i in range(nt):
     x = X[i,:]
     xdot = homing_eom(x)
 
+    los_log[i] = get_los_angle(x)
+    range_log[i] = get_range(x)
+
     Xdot[i,:] = xdot
 
     if i < (nt-1):
@@ -58,35 +79,6 @@ for i in range(nt):
 ####################################################
 #                   Plot Results
 ####################################################
-
-fig, ax = plt.subplots(2,3)
-
-ax[0,0].plot(time, X[:,0])
-ax[0,1].plot(time, X[:,1])
-ax[0,2].plot(time, X[:,2])
-ax[1,0].plot(time, X[:,3])
-ax[1,1].plot(time, X[:,4])
-ax[1,2].plot(time, X[:,5])
-
-ax[0,0].set_title("Target X-Position")
-ax[0,1].set_title("Target Y-Position")
-ax[0,2].set_title("Target Heading")
-ax[1,0].set_title("Missile X-Position")
-ax[1,1].set_title("Missile Y-Position")
-ax[1,2].set_title("Missile Heading")
-
-for i in range(2):
-    for j in range(3):
-        ax[i,j].grid(True)
-
-ax[0,0].set_xlabel("Time [s]")
-ax[0,1].set_xlabel("Time [s]")
-ax[0,2].set_xlabel("Time [s]")
-ax[1,0].set_xlabel("Time [s]")
-ax[1,1].set_xlabel("Time [s]")
-ax[1,2].set_xlabel("Time [s]")
-
-fig.suptitle("Homing Simulation")
 
 fig, ax = plt.subplots()
 
@@ -101,5 +93,20 @@ ax.set_title("Missile Path")
 ax.set_xlabel("X [m]")
 ax.set_ylabel("Y [m]")
 ax.grid(True)
+
+fig.suptitle("Homing Simulation")
+
+fig, ax = plt.subplots(1,2)
+ax[0].plot(time, np.rad2deg(los_log))
+ax[0].set_title("LOS Angle")
+ax[0].set_xlabel("Time [s]")
+ax[0].set_ylabel("LOS Angle [deg]")
+ax[0].grid(True)
+
+ax[1].plot(time, range_log)
+ax[1].set_title("Range")
+ax[1].set_xlabel("Time [s]")
+ax[1].set_ylabel("Range [m]")
+ax[1].grid(True)
 
 plt.show()
