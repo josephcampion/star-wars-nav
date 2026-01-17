@@ -8,12 +8,14 @@ import matplotlib.pyplot as plt
 #   Equations of Motion (TODO: Put in separate file/dir)
 ####################################################
 
-def homing_eom(x): #  u):
+def homing_eom(x, t): #  u):
     x_t, y_t, theta_t, x_m, y_m, theta_m = x
 
     x_t_dot = params.vt0 * np.cos(theta_t)
     y_t_dot = params.vt0 * np.sin(theta_t)
-    theta_t_dot = np.deg2rad(2.5) # TODO: Add evasion guidance.
+    # TODO: Add evasion guidance.
+    theta_t_dot = np.deg2rad(2.5)
+    # theta_t_dot = np.deg2rad(5.0) * np.sin(2*np.pi*0.2 * t)
 
     x_m_dot = params.vm0 * np.cos(theta_m)
     y_m_dot = params.vm0 * np.sin(theta_m)
@@ -85,8 +87,9 @@ xdot_log = np.zeros(xdim)
 
 for i in range(nt): 
 
+    t = time[i]
     x = x_log[i,:]
-    xdot = homing_eom(x)
+    xdot = homing_eom(x, t)
 
     los_log[i] = get_los_angle(x)
     range_log[i] = get_range(x) 
