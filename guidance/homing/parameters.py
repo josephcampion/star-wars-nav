@@ -1,6 +1,13 @@
 
 import numpy as np
 
+# Initialize sim parameters
+Tsim = 30.0 # seconds
+dt = 0.1 # timestep
+t0 = 0.0
+
+Rtol = 10.0 # [m]
+
 ###################################################
             #   Initial Conditions
 ###################################################
@@ -10,12 +17,12 @@ vt0 = 50.0 # [m/s]
 vm0 = 100.0 # [m/s]
 
 # Target and missile headings
-theta_t0 = np.deg2rad(10.0) # [rad]
-theta_m0 = np.deg2rad(20.0) # [rad]
+theta_t0 = np.deg2rad(30.0) # [rad]
+theta_m0 = np.deg2rad(15.0) # [rad]
 
 # Range and LOS angle to target
 R0 = 1000.0 # [m]
-beta0 = np.deg2rad(30.0) # [rad]
+beta0 = np.deg2rad(50.0) # [rad]
 
 # Initial missile position
 x_m0 = 0.0 # [m]
