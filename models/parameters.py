@@ -40,6 +40,12 @@ initial_condtions = np.array([
     r0,
 ])
 
+# For EKF initializiation (TODO: move elsewhere)
+vg0 = np.sqrt(u0**2 + v0**2 + w0**2)
+chi0 = psi0  # initial course angle
+wn0 = 0.0
+we0 = 0.0
+
 ###################################################
             #   Linearized Dynamics
 ###################################################

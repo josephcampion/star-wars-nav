@@ -1,23 +1,19 @@
 
-# This feels like a lot of imports...is there a way to consolidate?
 import numpy as np
+
 import models.aerosonde_uav as mav
 from models.parameters import initial_condtions as ic
-from simulation.kinematics import NonlinearKinematicState 
+from simulation.kinematics import NonlinearKinematicState as nlks
 from simulation.plotter import Plotter
 from simulation import dynamics as dyn
 
+
 ####################################################
-            #   Initialize Vehicle
+#   Initialize Vehicle and Simulation
 ####################################################
 
 uav = mav.vehicle
 
-####################################################
-#   Initialize Simulation
-####################################################
-
-# Initialize sim parameters
 Tsim = 30.0 # seconds
 dt = 0.01 # timestep
 t0 = 0.0
@@ -27,7 +23,7 @@ time = np.arange(t0, Tsim, dt)
 nt = len(time)
 
 # Initialize vectors 
-ac_state = NonlinearKinematicState(init_conds=ic)
+ac_state = nlks(init_conds=ic)
 
 xdim = [nt, len(ac_state.get_state())]
 
@@ -72,8 +68,7 @@ for i in range(nt):
     u_control = U_control[i,:]
 
     F_net, M_net = dyn.get_forces_and_moments(uav, x, u_control)
-    # print("F_net = ", F_net)
-    # print("M_net = ", M_net)
+
     xdot = ac_state.solve_f_equals_ma(uav.get_mass_props(), F_net, M_net)
 
     Xdot[i,:] = xdot

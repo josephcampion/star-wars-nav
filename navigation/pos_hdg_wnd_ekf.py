@@ -75,7 +75,7 @@ class PosHdgWndEKF:
         psuedo_meas_we = va * ss + we - vg * sc
 
         # TODO: Store output y in class?
-        return np.array([pn, pe, vg, chi,psuedo_meas_wn, psuedo_meas_we])
+        return np.array([pn, pe, vg, chi, psuedo_meas_wn, psuedo_meas_we])
 
 
     ####################################################
