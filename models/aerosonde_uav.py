@@ -1,10 +1,15 @@
 
 import numpy as np
-from numpy.random import beta
+
+from models.aerodynamics import AerodynamicCoefficients
+from models.propulsion import EngineProperties
+from models.mass_props import MassProperties
+from models.vehicle import Vehicle
 
 ###################################################
             #   Mass Properties
 ###################################################
+
 m = 13.5 # [kg]
 Jx = 0.8244 # [kg*m^2]
 Jy = 1.135 # [kg*m^2]
@@ -199,3 +204,30 @@ B_lat = np.array([
     [N_da, N_dr],
     [0.0, 0.0]
 ])
+
+###################################################
+            #   Create Vehicle
+###################################################
+
+aero_coeffs = AerodynamicCoefficients([
+    C_L_0, C_D_0, C_m_0, \
+    C_L_alpha, C_D_alpha, C_m_alpha, \
+    C_L_q, C_D_q, C_m_q, \
+    C_L_delta_e, C_D_delta_e, C_m_delta_e, \
+    C_Y_0, C_l_0, C_n_0, \
+    C_Y_beta, C_l_beta, C_n_beta, \
+    C_Y_p, C_l_p, C_n_p, \
+    C_Y_r, C_l_r, C_n_r, \
+    C_Y_delta_a, C_l_delta_a, C_n_delta_a, \
+    C_Y_delta_r, C_l_delta_r, C_n_delta_r \
+])
+
+engine_props = EngineProperties([S_prop, \
+    k_motor, k_T_p, k_Omega, C_prop])
+
+mass_props = MassProperties(m, Jx, Jy, Jz, Jxz)
+
+vehicle = Vehicle(aero_coeffs, engine_props, mass_props, S, c, b, rho)
+
+if __name__ == "__main__":
+    print(vehicle)

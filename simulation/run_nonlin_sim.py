@@ -2,11 +2,7 @@
 # This feels like a lot of imports...is there a way to consolidate?
 import numpy as np
 import models.aerosonde_uav as mav
-import models.aerodynamics as aero
-from models.propulsion import EngineProperties as prop
-from models.mass_props import MassProperties as mass
 from models.parameters import initial_condtions as ic
-from models.vehicle import Vehicle
 from simulation.kinematics import NonlinearKinematicState 
 from simulation.plotter import Plotter
 from simulation import dynamics as dyn
@@ -15,26 +11,7 @@ from simulation import dynamics as dyn
             #   Initialize Vehicle
 ####################################################
 
-aero_coeffs = aero.AerodynamicCoefficients([
-    mav.C_L_0, mav.C_D_0, mav.C_m_0, \
-    mav.C_L_alpha, mav.C_D_alpha, mav.C_m_alpha, \
-    mav.C_L_q, mav.C_D_q, mav.C_m_q, \
-    mav.C_L_delta_e, mav.C_D_delta_e, mav.C_m_delta_e, \
-    mav.C_Y_0, mav.C_l_0, mav.C_n_0, \
-    mav.C_Y_beta, mav.C_l_beta, mav.C_n_beta, \
-    mav.C_Y_p, mav.C_l_p, mav.C_n_p, \
-    mav.C_Y_r, mav.C_l_r, mav.C_n_r, \
-    mav.C_Y_delta_a, mav.C_l_delta_a, mav.C_n_delta_a, \
-    mav.C_Y_delta_r, mav.C_l_delta_r, mav.C_n_delta_r \
-])
-
-engine_props = prop([mav.S_prop, \
-    mav.k_motor, mav.k_T_p, mav.k_Omega, mav.C_prop])
-
-mass_props = mass(mav.m, mav.Jx, mav.Jy, mav.Jz, mav.Jxz)
-
-vehicle = Vehicle(aero_coeffs, engine_props, mass_props, mav.S, mav.c, mav.b, mav.rho)
-
+uav = mav.vehicle
 
 ####################################################
 #   Initialize Simulation
@@ -48,8 +25,6 @@ t0 = 0.0
 # This can get figured out in Simulation class:
 time = np.arange(t0, Tsim, dt)
 nt = len(time)
-
-mass_props = mass(mav.m, mav.Jx, mav.Jy, mav.Jz, mav.Jxz)
 
 # Initialize vectors 
 ac_state = NonlinearKinematicState(init_conds=ic)
@@ -96,10 +71,10 @@ for i in range(nt):
 
     u_control = U_control[i,:]
 
-    F_net, M_net = dyn.get_forces_and_moments(vehicle, x, u_control)
+    F_net, M_net = dyn.get_forces_and_moments(uav, x, u_control)
     # print("F_net = ", F_net)
     # print("M_net = ", M_net)
-    xdot = ac_state.solve_f_equals_ma(mass_props, F_net, M_net)
+    xdot = ac_state.solve_f_equals_ma(uav.get_mass_props(), F_net, M_net)
 
     Xdot[i,:] = xdot
 
