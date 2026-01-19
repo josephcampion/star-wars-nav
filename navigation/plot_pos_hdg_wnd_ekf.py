@@ -7,6 +7,8 @@ import models.aerosonde_uav as mav
 from models.parameters import initial_condtions as ic
 from models.parameters import vg0, chi0, wn0, we0
 from simulation.kinematics import NonlinearKinematicState as nlks
+from simulation.kinematics import get_course
+from simulation.rotations import get_dcm_ned2bod
 from simulation.plotter import Plotter
 from simulation import dynamics as dyn
 import flight_controls.trim as trim
@@ -79,11 +81,11 @@ def get_gps_meas(x_ac):
     u = x_ac[3]
     v = x_ac[4]
     w = x_ac[5]
-    psi = x_ac[8]
-    vg = np.sqrt(u**2 + v**2 + w**2)
-    vn = u * np.cos(psi) + v * np.sin(psi)
-    ve = -u * np.sin(psi) + v * np.cos(psi)
-    chi = np.arctan2(ve, vn)
+    v_bod = np.array([u, v, w])
+    DCM_ned2bod = get_dcm_ned2bod(x_ac[6], x_ac[7], x_ac[8])
+    v_ned = DCM_ned2bod.T @ v_bod
+    vg = np.linalg.norm(v_ned)
+    chi = get_course(v_ned)
     return np.array([pn, pe, vg, chi, 0.0, 0.0])
 
 # TODO: Add wind to this!
@@ -189,41 +191,59 @@ for i in range(nt):
 ####################################################
 
 fig, axs = plt.subplots(4, 2)
-axs[0,0].plot(time, gps_log[:,0])
-axs[0,0].plot(time, x_hat_pred_log[:,0], label='$hat{p}_n$', linestyle='--')
-axs[0,0].set_title('North Position')
+axs[0,0].plot(time, xlog[:,0], label='Truth')
+axs[0,0].plot(time, gps_log[:,0], label='GPS', linestyle='--')
+axs[0,0].plot(time, x_hat_pred_log[:,0], label='$\hat{p}_n$', linestyle=':')
+axs[0,0].set_title(r'$p_n$')
 axs[0,0].set_ylabel('North [m]')
 axs[0,0].grid(True)
-axs[0,1].plot(time, gps_log[:,1])
-axs[0,1].plot(time, x_hat_pred_log[:,1], label='$hat{p}_e$', linestyle='--')
-axs[0,1].set_title('East Position')
+axs[0,0].legend()
+
+axs[0,1].plot(time, xlog[:,1], label='Truth')
+axs[0,1].plot(time, gps_log[:,1], label='GPS', linestyle='--')
+axs[0,1].plot(time, x_hat_pred_log[:,1], label='$\hat{p}_e$', linestyle=':')
+axs[0,1].set_title(r'$p_e$')
 axs[0,1].set_ylabel('East [m]')
 axs[0,1].grid(True)
-axs[1,0].plot(time, gps_log[:,2])
-axs[1,0].plot(time, x_hat_pred_log[:,2], label='$hat{v}_g$')
-axs[1,0].set_title('Groundspeed')
+axs[0,1].legend()
+
+# TODO: Calculate groundspeed from truth motion.
+axs[1,0].plot(time, gps_log[:,2], label='GPS', linestyle='--')
+axs[1,0].plot(time, x_hat_pred_log[:,2], label='$\hat{v}_g$', linestyle=':')
+axs[1,0].set_title(r'$v_g$')
 axs[1,0].set_ylabel('Groundspeed [m/s]')
 axs[1,0].grid(True)
-axs[1,1].plot(time, gps_log[:,3])
-axs[1,1].plot(time, x_hat_pred_log[:,3], label='$hat{\chi}$')
-axs[1,1].set_title('Course')
-axs[1,1].set_ylabel('Course [rad]')
+axs[1,0].legend()
+
+axs[1,1].plot(time, np.rad2deg(gps_log[:,3]))
+axs[1,1].plot(time, np.rad2deg(x_hat_pred_log[:,3]), label='$\hat{\chi}$', linestyle='--')
+axs[1,1].set_title(r'$\chi$')
+axs[1,1].set_ylabel('Course [deg]')
 axs[1,1].grid(True)
-axs[2,0].plot(time, gps_log[:,4])
-axs[2,0].plot(time, x_hat_pred_log[:,4], label='$hat{\psi}$')
-axs[2,0].set_title('Heading')
-axs[2,0].set_ylabel('Heading [rad]')
+axs[1,1].legend()
+
+axs[2,0].plot(time, np.rad2deg(xlog[:,8]), label='Truth')
+axs[2,0].plot(time, np.rad2deg(x_hat_pred_log[:,4]), label='$\hat{\psi}$', linestyle='--')
+axs[2,0].set_title(r'$\psi$')
+axs[2,0].set_ylabel('Heading [deg]')
 axs[2,0].grid(True)
-# axs[2,1].plot(time, w)
-axs[2,1].plot(time, x_hat_pred_log[:,5], label='$hat{w}_n$')
-axs[2,1].set_title('Wind North')
+axs[2,0].legend()
+
+axs[2,1].plot(time, wn0 * np.ones(nt), label='Truth')
+axs[2,1].plot(time, x_hat_pred_log[:,5], label='$\hat{w}_n$', linestyle='--')
+axs[2,1].set_title(r'$\hat{w}_n$')
 axs[2,1].set_ylabel('Wind North [m/s]')
 axs[2,1].grid(True)
-# axs[3,0].plot(time, gps_log[:,5])
-axs[3,0].plot(time, x_hat_pred_log[:,6], label='$hat{w}_e$')
-axs[3,0].set_title('Wind East')
+axs[2,1].legend()
+
+axs[3,0].plot(time, we0 * np.ones(nt), label='Truth')
+axs[3,0].plot(time, x_hat_pred_log[:,6], label='$\hat{w}_e$', linestyle='--')
+axs[3,0].set_title(r'$\hat{w}_e$')
 axs[3,0].set_ylabel('Wind East [m/s]')
 axs[3,0].grid(True)
+axs[3,0].legend()
+
+fig.suptitle('Position, Heading, and Wind EKF Test')
 
 # sim_plotter = Plotter(time, xlog, xdot_log)
 # sim_plotter.plot_sim()
