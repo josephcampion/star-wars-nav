@@ -19,7 +19,7 @@ w0 = 1.0  # initial velocity along body z-axis
 
 phi0 = 0.0  # initial roll angle
 theta0 = np.deg2rad(2.5)  # initial pitch angle
-psi0 = 0.0  # initial yaw angle
+psi0 = np.deg2rad(30.0)  # initial yaw angle
 
 p0 = 0.0 # initial roll rate
 q0 = 0.0 # initial pitch rate

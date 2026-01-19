@@ -67,4 +67,9 @@ trim_map = np.stack([
     throttle_trim_deps
     ], axis=1)
 
-print("trim_map = ", trim_map)
+if __name__ == "__main__":
+    print("airspeed_trim_indeps = ", airspeed_trim_indeps)
+    print("alpha_trim_deps = ", alpha_trim_deps)
+    print("elevator_trim_deps = ", elevator_trim_deps)
+    print("throttle_trim_deps = ", throttle_trim_deps)
+    print("trim_map = ", trim_map)
