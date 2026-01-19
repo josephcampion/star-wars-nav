@@ -172,7 +172,7 @@ class PosHdgWndEKF:
         R = self._R
         C = self.get_J_dh_dx(x_hat_pred, u)
         L = P_pred @ C.T @ np.linalg.inv(C @ P_pred @ C.T + R)
-        y_est = self.get_y_accel_est(x_hat_pred, u)
+        y_est = self.get_y_gps_est(x_hat_pred, u)
         y_err = y_meas - y_est
         x_err = L @ y_err
         x_hat_upd = x_hat_pred + x_err

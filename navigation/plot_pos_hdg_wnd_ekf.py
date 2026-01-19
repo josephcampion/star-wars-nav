@@ -86,7 +86,7 @@ def get_gps_meas(x_ac):
     chi = np.arctan2(ve, vn)
     return np.array([pn, pe, vg, chi, 0.0, 0.0])
 
-# TODO: Add wind to this.
+# TODO: Add wind to this!
 def get_va_meas(x_ac):
     u = x_ac[3]
     v = x_ac[4]
@@ -166,6 +166,11 @@ for i in range(nt):
         theta_meas,])
     x_hat_pred, P_pred, x_hat_upd, P_upd = phw_ekf.ekf_step(x_hat_upd, P_upd, u_ekf, y_gps_meas)
 
+    x_hat_pred_log[i] = x_hat_pred
+    P_pred_log[i] = P_pred
+    x_hat_upd_log[i] = x_hat_upd
+    P_upd_log[i] = P_upd
+
     u_control = U_control[i,:]
     F_net, M_net = dyn.get_forces_and_moments(uav, x_i, u_control)
     xdot = ac_state.solve_f_equals_ma(uav.get_mass_props(), F_net, M_net)
@@ -185,35 +190,42 @@ for i in range(nt):
 
 fig, axs = plt.subplots(4, 2)
 axs[0,0].plot(time, gps_log[:,0])
+axs[0,0].plot(time, x_hat_pred_log[:,0], label='$hat{p}_n$', linestyle='--')
 axs[0,0].set_title('North Position')
 axs[0,0].set_ylabel('North [m]')
 axs[0,0].grid(True)
 axs[0,1].plot(time, gps_log[:,1])
+axs[0,1].plot(time, x_hat_pred_log[:,1], label='$hat{p}_e$', linestyle='--')
 axs[0,1].set_title('East Position')
 axs[0,1].set_ylabel('East [m]')
 axs[0,1].grid(True)
 axs[1,0].plot(time, gps_log[:,2])
+axs[1,0].plot(time, x_hat_pred_log[:,2], label='$hat{v}_g$')
 axs[1,0].set_title('Groundspeed')
 axs[1,0].set_ylabel('Groundspeed [m/s]')
 axs[1,0].grid(True)
 axs[1,1].plot(time, gps_log[:,3])
+axs[1,1].plot(time, x_hat_pred_log[:,3], label='$hat{\chi}$')
 axs[1,1].set_title('Course')
 axs[1,1].set_ylabel('Course [rad]')
 axs[1,1].grid(True)
 axs[2,0].plot(time, gps_log[:,4])
+axs[2,0].plot(time, x_hat_pred_log[:,4], label='$hat{\psi}$')
 axs[2,0].set_title('Heading')
 axs[2,0].set_ylabel('Heading [rad]')
 axs[2,0].grid(True)
-# axs[2,1].plot(time, gps_log[:,5])
-# axs[2,1].set_title('Wind North')
-# axs[2,1].set_ylabel('Wind North [m/s]')
-# axs[2,1].grid(True)
+# axs[2,1].plot(time, w)
+axs[2,1].plot(time, x_hat_pred_log[:,5], label='$hat{w}_n$')
+axs[2,1].set_title('Wind North')
+axs[2,1].set_ylabel('Wind North [m/s]')
+axs[2,1].grid(True)
 # axs[3,0].plot(time, gps_log[:,5])
-# axs[3,0].set_title('Wind East')
-# axs[3,0].set_ylabel('Wind East [m/s]')
-# axs[3,0].grid(True)
+axs[3,0].plot(time, x_hat_pred_log[:,6], label='$hat{w}_e$')
+axs[3,0].set_title('Wind East')
+axs[3,0].set_ylabel('Wind East [m/s]')
+axs[3,0].grid(True)
 
-sim_plotter = Plotter(time, xlog, xdot_log)
-sim_plotter.plot_sim()
+# sim_plotter = Plotter(time, xlog, xdot_log)
+# sim_plotter.plot_sim()
 
 plt.show()
