@@ -19,7 +19,7 @@ w0 = 1.0  # initial velocity along body z-axis
 
 phi0 = 0.0  # initial roll angle
 theta0 = np.deg2rad(2.5)  # initial pitch angle
-psi0 = 0.0  # initial yaw angle
+psi0 = np.deg2rad(30.0)  # initial yaw angle
 
 p0 = 0.0 # initial roll rate
 q0 = 0.0 # initial pitch rate
@@ -39,6 +39,12 @@ initial_condtions = np.array([
     q0,
     r0,
 ])
+
+# For EKF initializiation (TODO: move elsewhere)
+vg0 = np.sqrt(u0**2 + v0**2 + w0**2)
+chi0 = psi0  # initial course angle
+wn0 = 0.0
+we0 = 0.0
 
 ###################################################
             #   Linearized Dynamics

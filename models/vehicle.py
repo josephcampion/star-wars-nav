@@ -24,6 +24,9 @@ class Vehicle:
     def get_prop_force_and_moment(self, Va, delta_t):
         return self._engine_props.get_prop_force_and_moment(Va, delta_t)
 
+    def get_mass_props(self):
+        return self._mass_props
+
 # TODO: Move examples like this to test_vehicle.py or test_dynamics.py
 if __name__ == "__main__":
 
