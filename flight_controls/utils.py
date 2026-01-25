@@ -50,6 +50,15 @@ def plot_lon_step_response(t, x, label="", amplitude=1.0):
 
     plt.suptitle(label + " Step Response")
 
+
+####################################################
+        #   Frequency Space Utilities
+####################################################
+
+def mag2db(mag):
+    return 20 * np.log10(mag)
+
+
 def plot_bode(mag_db, phase_deg, omega, ax, label=""):
     ax[0].semilogx(omega, mag_db, label=label)
     ax[1].semilogx(omega, phase_deg) # , label=label)
@@ -62,7 +71,11 @@ def plot_bode(mag_db, phase_deg, omega, ax, label=""):
         axi.grid(which='major', color='k', linestyle='-', linewidth=0.5)
         axi.grid(which='minor', color='0.9', linestyle='-', alpha=0.75)
         axi.grid(True)
-        axi.legend()
+    ax[0].legend()
 
-def mag2db(mag):
-    return 20 * np.log10(mag)
+def plot_nichols(mag_db, phase_deg, ax, label=""):
+    ax.plot(phase_deg, mag_db, label=label)
+    ax.set_ylabel('[dB]')
+    ax.set_xlabel('[deg]')
+    ct.nichols_grid()  # Adds standard Nichols chart grid
+    ax.legend()

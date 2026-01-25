@@ -3,14 +3,16 @@ import numpy as np
 import control as ct # 3rd party
 import matplotlib.pyplot as plt
 import flight_controls.transfer_functions as tfs
-from flight_controls.utils import plot_bode, mag2db
+from flight_controls.utils import plot_bode, mag2db, plot_nichols
 from models.actuator import tf_actuator
 
 # Include actuator dynamics in open-loop transfer function.
 tf_da_to_p = tfs.tf_da_to_p 
 tf_da_to_p_actuator = tf_da_to_p * tf_actuator
 
-# ----- Plot Bode & Nichols ----- #
+####################################################
+            #   Bode Plots
+####################################################
 
 fig, ax = plt.subplots(2,1)
 
@@ -25,31 +27,42 @@ plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Open-Loop")
 
 
 fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
-plt.show()
 
-# fig, ax = plt.subplots()
-# ct.bode_plot(tf_da_to_p, initial_phase=0)
-# ax.grid(True)
+####################################################
+            #   Nichols Plots
+####################################################
 
-# fig, ax = plt.subplots()
-# ct.nichols_plot(tf_da_to_p)
-# ax.grid(True)
 
+fig, ax = plt.subplots()
+
+mag, phase_rad, omega = ct.bode(tf_da_to_p, plot=False)
+plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Aileron to Roll Rate")
+
+mag, phase_rad, omega = ct.bode(tf_actuator, plot=False)
+plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Actuator Loop")
+
+mag, phase_rad, omega = ct.bode(tf_da_to_p_actuator, plot=False)
+plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Open-Loop")
+
+fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
 
 ####################################################
             #   Step Response
 ####################################################
 
-response = ct.step_response(tf_da_to_p, T=1.0)
+dt = 0.001
+Tsim = 1.0
+time_pts = np.arange(0, Tsim, dt)
+response = ct.step_response(tf_da_to_p_actuator, T=Tsim, T_num=1000)
 t = response.time
-p_t = response.x[0,0,:] # roll rate response
+p_t = response.y[0,0,:] # roll rate response
 
 #------ Plot Bare Airframe Response -----#
 
 fig, ax = plt.subplots()
 
 ax.plot(t, np.rad2deg(p_t), label="Roll Rate")
-ax.set_title(r'$p(t)$ from $\delta_a(t)$')
+ax.set_title(r'$p(t)$ from $\delta_{a,cmd}(t)$')
 ax.set_ylabel('[deg/s]')
 ax.set_xlabel('Time [s]')
 ax.grid(True)
