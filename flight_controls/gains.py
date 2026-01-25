@@ -10,8 +10,8 @@ ki_p = kp_p * omega_p
 # kd_p = 0.0
 
 #-------- Roll Angle Control ------#
-kp_phi = 0.0
-ki_phi = 0.0
+kp_phi = 0.4
+ki_phi = 10.0
 # kd_phi = 0.0
 
 ####################################################

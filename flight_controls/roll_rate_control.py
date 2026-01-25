@@ -27,7 +27,7 @@ utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Actuator L
 mag, phase_rad, omega = ct.bode(tf_da_cmd_to_p, plot=False)
 utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Open-Loop")
 
-fig.suptitle(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
+fig.suptitle(r'$P_p(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 
 ####################################################
             #   Nichols Plots
@@ -44,7 +44,7 @@ utils.plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Actuator Loop"
 mag, phase_rad, omega = ct.bode(tf_da_cmd_to_p, plot=False)
 utils.plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Open-Loop")
 
-ax.set_title(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
+ax.set_title(r'$P_p(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 
 ####################################################
             #   Step Response
@@ -57,7 +57,7 @@ p_t = response.y[0,0,:] # roll rate response
 
 fig, ax = plt.subplots()
 ax.plot(t, np.rad2deg(p_t), label="Roll Rate")
-ax.set_title(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
+ax.set_title(r'$P_p(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 ax.set_ylabel('[deg/s]')
 ax.set_xlabel('Time [s]')
 ax.grid(True)
