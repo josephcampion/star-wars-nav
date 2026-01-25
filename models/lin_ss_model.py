@@ -167,12 +167,15 @@ B_lat = np.array([
     [0.0, 0.0]
 ])
 
-# TODO: Get x and z aerodynamic derivatives (input is alpha trim).
-(C_X_of_alpha, C_X_q_of_alpha, C_X_delta_e_of_alpha, \
-    C_Z_of_alpha, C_Z_q_of_alpha, C_Z_delta_e_of_alpha) \
-        = aero_coeffs.get_x_and_z_coefficients(alpha_trim)
 
+# (C_X_of_alpha, C_X_q_of_alpha, C_X_delta_e_of_alpha, \
+#     C_Z_of_alpha, C_Z_q_of_alpha, C_Z_delta_e_of_alpha) \
+#         = aero_coeffs.get_x_and_z_coefficients(alpha_trim)
 
+# c1 = u_trim * rho * S / m
+# c2 = rho * S * w_trim * C_X_of_alpha
+
+# X_u = c1 * (C_X)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import flight_controls.transfer_functions as tfs
 
 
-tf_roll = tfs.tf_roll
+tf_roll = tfs.tf_da_to_roll
 
 # ----- Plot Bode & Nichols ----- #
 
