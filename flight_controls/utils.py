@@ -81,7 +81,6 @@ def plot_nichols(mag_db, phase_deg, ax, label=""):
     ax.legend()
 
 def plot_nichols_margins(ax):
-
     gm_vec = [6, 8, 12]
     pm_vec = [30, 45, 60]
     color_vec = ['r', 'y', 'g']
