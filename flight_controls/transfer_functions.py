@@ -95,6 +95,8 @@ s = ct.tf('s')
 a_phi_1 = -1.0 * q_inf * S * b * C_p_p * b / (2 * Va)
 a_phi_2 = q_inf * S * b * C_p_delta_a
 
+#--------------------Delta Aileron to Roll Rate TF-----------------------#
+tf_da_to_p = a_phi_1 / (s + a_phi_2)
 tf_da_to_roll = a_phi_1 / (s * (s + a_phi_2))
 
 #--------------------Course TF-----------------------#
@@ -108,7 +110,7 @@ c1 = rho * Va * S / (2 * m)
 a_beta_1 = -1 * c1 * C_Y_beta
 a_beta_2 = c1 * C_Y_delta_r
 
-tf_rudder_to_beta = a_beta_2 / (s + a_beta_1)
+tf_dr_to_beta = a_beta_2 / (s + a_beta_1)
 
 # TODO: Make tf_rudder_to_ay_tf
 
@@ -127,6 +129,10 @@ a_theta_2 =  -1 * c1 * C_m_alpha
 a_theta_3 = c1 * C_m_delta_e
 
 tf_de_to_pitch = a_theta_3 / (s**2 + a_theta_1 * s + a_theta_2)
+
+#--------------------Delta Elevator to Pitch Rate TF-----------------------#
+tf_de_to_q = tf_de_to_pitch * s
+
 
 #--------------------Altitude TF-----------------------#
 # Assumptions: v~=0, w~=0, phi~=0, u~=Va, phi~=0, theta small.
@@ -158,17 +164,21 @@ c3 = C_D_0 + C_D_alpha * alpha_trim + C_D_delta_e * delta_e_trim
 a_Va_1 = c1 * c3 + c2 * Va_trim
 a_Va_3 = g * np.cos(theta_trim - alpha_trim)
 
-tf_throttle_to_airspeed = -a_Va_3 / (s + a_Va_1)
+tf_pitch_to_airspeed = -a_Va_3 / (s + a_Va_1)
 
 if __name__ == "__main__":
     
     print("Lateral Transfer Functions:")
+    print(f"tf_da_to_p = {tf_da_to_p}")
     print(f"tf_da_to_roll = {tf_da_to_roll}")
     print(f"tf_roll_to_course = {tf_roll_to_course}")
-    print(f"tf_rudder_to_beta = {tf_rudder_to_beta}")
+    print(f"tf_dr_to_beta = {tf_dr_to_beta}")
     print("--------------------------------")
 
     print("Longitudinal Transfer Functions:")
+    print(f"tf_de_to_q = {tf_de_to_q}")
     print(f"tf_de_to_pitch = {tf_de_to_pitch}")
     print(f"tf_theta_to_h = {tf_theta_to_h}")
+    print(f"tf_throttle_to_airspeed = {tf_throttle_to_airspeed}")
+    print(f"tf_pitch_to_airspeed = {tf_pitch_to_airspeed}")
     print("--------------------------------")
