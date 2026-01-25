@@ -79,3 +79,16 @@ def plot_nichols(mag_db, phase_deg, ax, label=""):
     ax.set_xlabel('[deg]')
     ct.nichols_grid()  # Adds standard Nichols chart grid
     ax.legend()
+
+def plot_nichols_margins(ax):
+
+    gm_vec = [6, 8, 12]
+    pm_vec = [30, 45, 60]
+    color_vec = ['r', 'y', 'g']
+    for i in range(len(gm_vec)):
+        a, b = pm_vec[i], gm_vec[i]  # semi-major and semi-minor axes
+        t = np.linspace(0, 2*np.pi, 100)
+        x0, y0 = -180.0, 0.0
+        x = x0 + a * np.cos(t)
+        y = y0 + b * np.sin(t)
+        ax.plot(x, y, '--', color=color_vec[i], linewidth=0.75)

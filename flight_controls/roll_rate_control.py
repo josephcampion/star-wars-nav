@@ -3,12 +3,13 @@ import numpy as np
 import control as ct # 3rd party
 import matplotlib.pyplot as plt
 import flight_controls.transfer_functions as tfs
-from flight_controls.utils import plot_bode, mag2db, plot_nichols
+import flight_controls.utils as utils
+from flight_controls.utils import mag2db
 from models.actuator import tf_actuator
 
 # Include actuator dynamics in open-loop transfer function.
 tf_da_to_p = tfs.tf_da_to_p 
-tf_da_to_p_actuator = tf_da_to_p * tf_actuator
+tf_da_cmd_to_p = tf_da_to_p * tf_actuator
 
 ####################################################
             #   Bode Plots
@@ -17,16 +18,15 @@ tf_da_to_p_actuator = tf_da_to_p * tf_actuator
 fig, ax = plt.subplots(2,1)
 
 mag, phase_rad, omega = ct.bode(tf_da_to_p, plot=False)
-plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax,label="Aileron to Roll Rate")
+utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax,label="Aileron to Roll Rate")
 
 mag, phase_rad, omega = ct.bode(tf_actuator, plot=False)
-plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Actuator Loop")
+utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Actuator Loop")
 
-mag, phase_rad, omega = ct.bode(tf_da_to_p_actuator, plot=False)
-plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Open-Loop")
+mag, phase_rad, omega = ct.bode(tf_da_cmd_to_p, plot=False)
+utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Open-Loop")
 
-
-fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
+fig.suptitle(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 
 ####################################################
             #   Nichols Plots
@@ -36,15 +36,19 @@ fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
 fig, ax = plt.subplots()
 
 mag, phase_rad, omega = ct.bode(tf_da_to_p, plot=False)
-plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Aileron to Roll Rate")
+utils.plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Aileron to Roll Rate")
 
 mag, phase_rad, omega = ct.bode(tf_actuator, plot=False)
-plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Actuator Loop")
+utils.plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Actuator Loop")
 
-mag, phase_rad, omega = ct.bode(tf_da_to_p_actuator, plot=False)
-plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Open-Loop")
+mag, phase_rad, omega = ct.bode(tf_da_cmd_to_p, plot=False)
+utils.plot_nichols(mag2db(mag), np.rad2deg(phase_rad), ax, label="Open-Loop")
 
-fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
+gm = 8.0 # [dB]
+pm = 45.0 # [deg]
+utils.plot_nichols_margins(ax)
+
+ax.set_title(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 
 ####################################################
             #   Step Response
@@ -53,7 +57,7 @@ fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
 dt = 0.001
 Tsim = 1.0
 time_pts = np.arange(0, Tsim, dt)
-response = ct.step_response(tf_da_to_p_actuator, T=Tsim, T_num=1000)
+response = ct.step_response(tf_da_cmd_to_p, T=Tsim, T_num=1000)
 t = response.time
 p_t = response.y[0,0,:] # roll rate response
 
@@ -62,7 +66,7 @@ p_t = response.y[0,0,:] # roll rate response
 fig, ax = plt.subplots()
 
 ax.plot(t, np.rad2deg(p_t), label="Roll Rate")
-ax.set_title(r'$p(t)$ from $\delta_{a,cmd}(t)$')
+ax.set_title(r'$P(s)=\frac{p(s)}{\delta_{a,cmd}(s)}$')
 ax.set_ylabel('[deg/s]')
 ax.set_xlabel('Time [s]')
 ax.grid(True)
@@ -75,12 +79,12 @@ ax.grid(True)
 
 
 ####################################################
-        #   Make Roll Controller
+        #   Roll Rate Controller
 ####################################################
 
-kp_phi = 1.e2
-ki_phi = 0.0
-kd_phi = 0.0
+kp_p = 1.e2
+ki_p = 0.0
+# kd_p = 0.0
 
 # TODO: Need minus sign because aileron deflection is opposite of induced roll rate.
 # tf_roll_ctrl = ct.tf([-kp_phi], [1.0])
