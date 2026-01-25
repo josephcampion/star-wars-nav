@@ -133,20 +133,5 @@ ax.set_xlabel('Time [s]')
 ax.grid(True)
 
 
-####################################################
-#   TODO: Plot Bare Airframe vs. Pitch Damper Poles
-####################################################
-
-# ss_lon = ct.ss(A_lon, B_lon, C_lon, D_lon)
-
-# ss_pitch_damper = ct.ss(A_lon - B_lon @ K_lon, np.zeros([4,2]), C_lon, D_lon)
-
-# fig, ax = plt.subplots()
-# ct.pzmap(ss_lon)
-# plt.grid(True)
-
-# fig, ax = plt.subplots()
-# ct.pzmap(ss_pitch_damper)
-# plt.grid(True)
-
+# Plot all the things!
 plt.show()

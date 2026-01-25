@@ -20,8 +20,10 @@ ki_phi = 0.0
 ####################################################
 
 #------- Pitch Rate Control --------#
-kp_q = 1.e2
-ki_q = 0.0
+kp_q = 0.2
+omega_q = 2.0
+ki_q = kp_q * omega_q
+print(f"kp_q = {kp_q}, ki_q = {ki_q}, omega_q = {omega_q}")
 # kd_q = 0.0
 
 #-------- Pitch Angle Control ------#

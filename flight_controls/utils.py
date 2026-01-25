@@ -85,9 +85,17 @@ def plot_nichols_margins(ax):
     pm_vec = [30, 45, 60]
     color_vec = ['r', 'y', 'g']
     for i in range(len(gm_vec)):
-        a, b = pm_vec[i], gm_vec[i]  # semi-major and semi-minor axes
-        t = np.linspace(0, 2*np.pi, 100)
-        x0, y0 = -180.0, 0.0
-        x = x0 + a * np.cos(t)
-        y = y0 + b * np.sin(t)
-        ax.plot(x, y, '--', color=color_vec[i], linewidth=0.75)
+        for x0 in [-180]: # , 180]:
+            a, b = pm_vec[i], gm_vec[i]  # semi-major and semi-minor axes
+            t = np.linspace(0, 2*np.pi, 100)
+            y0 = 0.0
+            x = x0 + a * np.cos(t)
+            y = y0 + b * np.sin(t)
+            ax.plot(x, y, '--', color=color_vec[i], linewidth=0.75)
+
+def wrap_phase(phase_deg):
+    while phase_deg[0] < -180:
+        phase_deg += 360
+    while phase_deg[0] > 180:
+        phase_deg -= 360
+    return phase_deg
