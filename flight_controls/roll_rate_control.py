@@ -4,19 +4,27 @@ import control as ct # 3rd party
 import matplotlib.pyplot as plt
 import flight_controls.transfer_functions as tfs
 from flight_controls.utils import plot_bode, mag2db
+from models.actuator import tf_actuator
 
-
-tf_da_to_p = tfs.tf_da_to_p
+# Include actuator dynamics in open-loop transfer function.
+tf_da_to_p = tfs.tf_da_to_p 
+tf_da_to_p_actuator = tf_da_to_p * tf_actuator
 
 # ----- Plot Bode & Nichols ----- #
 
-mag, phase_rad, omega = ct.bode(tf_da_to_p, plot=False)
-# print(mag)
-# print(phase)
-# print(omega)
+fig, ax = plt.subplots(2,1)
 
-fig, ax = plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega)
-fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}$')
+mag, phase_rad, omega = ct.bode(tf_da_to_p, plot=False)
+plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax,label="Aileron to Roll Rate")
+
+mag, phase_rad, omega = ct.bode(tf_actuator, plot=False)
+plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Actuator Loop")
+
+mag, phase_rad, omega = ct.bode(tf_da_to_p_actuator, plot=False)
+plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax, label="Open-Loop")
+
+
+fig.suptitle(r'$G_{ol}(s)=\frac{p(s)}{\delta_a(s)}G_{actuator}(s)$')
 plt.show()
 
 # fig, ax = plt.subplots()

@@ -50,10 +50,9 @@ def plot_lon_step_response(t, x, label="", amplitude=1.0):
 
     plt.suptitle(label + " Step Response")
 
-def plot_bode(mag_db, phase_deg, omega):
-    fig, ax = plt.subplots(2,1)
-    ax[0].semilogx(omega, mag_db)
-    ax[1].semilogx(omega, phase_deg)
+def plot_bode(mag_db, phase_deg, omega, ax, label=""):
+    ax[0].semilogx(omega, mag_db, label=label)
+    ax[1].semilogx(omega, phase_deg) # , label=label)
     ax[0].set_ylabel('[dB]')
     ax[1].set_ylabel('[deg]')
     # ax[0].set_xlabel('Frequency [rad/s]')
@@ -63,7 +62,7 @@ def plot_bode(mag_db, phase_deg, omega):
         axi.grid(which='major', color='k', linestyle='-', linewidth=0.5)
         axi.grid(which='minor', color='0.9', linestyle='-', alpha=0.75)
         axi.grid(True)
-    return fig, ax
+        axi.legend()
 
 def mag2db(mag):
     return 20 * np.log10(mag)
