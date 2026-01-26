@@ -93,6 +93,21 @@ def plot_nichols_margins(ax):
             y = y0 + b * np.sin(t)
             ax.plot(x, y, '--', color=color_vec[i], linewidth=0.75)
 
+
+def plot_bode_margins(ax, wmin, wmax):
+    print("get's here")
+    print("wmin = ", wmin)
+    print("wmax = ", wmax)
+    gm_vec = [6, 8, 12]
+    pm_vec = [30, 45, 60]
+    color_vec = ['r', 'y', 'g']
+    for i in range(len(gm_vec)):
+        ax[0].plot([wmin, wmax], [-gm_vec[i], -gm_vec[i]], linestyle='--', color=color_vec[i], linewidth=0.75)
+        ax[1].plot([wmin, wmax], [-180 + pm_vec[i], -180 + pm_vec[i]], linestyle='--', color=color_vec[i], linewidth=0.75)
+    # Also plot bandwidth line
+    # ax[0].plot([wmin, wmax], [0.0, 0.0], color='k', linestyle='--', linewidth=0.75)
+
+
 def wrap_phase(phase_deg):
     while phase_deg[0] < -180:
         phase_deg += 360

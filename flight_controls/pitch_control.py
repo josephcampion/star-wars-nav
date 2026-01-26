@@ -34,7 +34,7 @@ tf_q_closed_loop = (tf_q_ctrl * tf_de_cmd_to_q) / (1 + tf_q_ctrl * tf_de_cmd_to_
 ####################################################
 
 s = ct.tf('s')
-tf_theta_ctrl = gains.kp_theta + gains.ki_theta / s
+tf_theta_ctrl = gains.kp_theta + gains.ki_theta / s # + gains.kd_theta * s
 # print("tf_theta_ctrl = ", tf_theta_ctrl)
 
 tf_theta_open_loop = tf_theta_ctrl * tf_q_closed_loop

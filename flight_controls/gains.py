@@ -10,9 +10,10 @@ ki_p = kp_p * omega_p
 # kd_p = 0.0
 
 #-------- Roll Angle Control ------#
-kp_phi = 0.4
-ki_phi = 10.0
-# kd_phi = 0.0
+kp_phi = 1.0
+omega_phi = 20.0
+ki_phi = kp_phi * omega_phi
+kd_phi = 0.02
 
 ####################################################
             #   Longitudinal Gains
@@ -28,15 +29,15 @@ ki_q = kp_q * omega_q
 kp_theta = 0.4
 omega_theta = 10.0
 ki_theta = kp_theta * omega_theta
-# kd_theta = 0.0
+kd_theta = 0.0
 
 # ------- Altitude Control --------#
 kp_h = 0.0
 ki_h = 0.0
 
 # ------- Airspeed Control --------#
-kp_Va = 0.0
-ki_Va = 0.0
+kp_va = 0.0
+ki_va = 0.0
 
 
 ####################################################
@@ -54,5 +55,5 @@ if __name__ == "__main__":
     print(f"kp_q = {kp_q}, ki_q = {ki_q}, omega_q = {omega_q}")
     print(f"kp_theta = {kp_theta}, ki_theta = {ki_theta}, omega_theta = {omega_theta}")
     # print(f"kp_h = {kp_h}, ki_h = {ki_h}")
-    # print(f"kp_Va = {kp_Va}, ki_Va = {ki_Va}")
+    # print(f"kp_va = {kp_va}, ki_va = {ki_va}")
     # print(f"kp_r = {kp_r}, ki_r = {ki_r}")

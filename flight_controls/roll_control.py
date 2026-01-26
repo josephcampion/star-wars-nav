@@ -35,7 +35,7 @@ tf_p_closed_loop = (tf_p_ctrl * tf_da_cmd_to_p) / (1 + tf_p_ctrl * tf_da_cmd_to_
 ####################################################
 
 s = ct.tf('s')
-tf_phi_ctrl = gains.kp_phi + gains.ki_phi / s
+tf_phi_ctrl = gains.kp_phi + gains.ki_phi / s + gains.kd_phi * s
 print(tf_phi_ctrl)
 
 tf_phi_open_loop = tf_phi_ctrl * tf_p_closed_loop
@@ -62,6 +62,7 @@ ax.set_title(r'$G_{ol}(s)=\frac{\phi(s)}{e_{\phi}(s)}=K_\phi(s)\cdot P_\phi(s)$'
 fig, ax = plt.subplots(2,1)
 mag, phase_rad, omega = ct.bode(tf_phi_open_loop, plot=False)
 utils.plot_bode(mag2db(mag), np.rad2deg(phase_rad), omega, ax,label="Roll Open-Loop")
+utils.plot_bode_margins(ax, omega[0], omega[-1])
 fig.suptitle(r'$G_{ol}(s)=\frac{\phi(s)}{e_{\phi}(s)}$')
 
 
